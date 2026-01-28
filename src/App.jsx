@@ -105,26 +105,32 @@ const Notification = ({ message, type, show }) => {
   );
 };
 
-// Componente Footer Profesional
+// Componente Footer Profesional con Background Image
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-white pt-12 pb-6">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+    <footer 
+      className="relative text-white pt-16 pb-8 bg-cover bg-center bg-no-repeat"
+      style={{
+        // Aplicamos un gradiente oscuro sobre la imagen para asegurar legibilidad perfecta
+        backgroundImage: `linear-gradient(to top, rgba(17, 24, 39, 0.95), rgba(17, 24, 39, 0.85)), url('https://firebasestorage.googleapis.com/v0/b/misuperappmayorista.firebasestorage.app/o/footer_mayorista.png?alt=media&token=97089e23-4dc1-4dca-bc63-dc2e4f4adff3')`
+      }}
+    >
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           {/* Columna 1: Info */}
           <div>
-            <h3 className="text-2xl font-black mb-4 tracking-tighter">MAYORISTA<span className="text-gray-400">ONLINE</span></h3>
-            <p className="text-gray-400 text-sm leading-relaxed mb-4">
+            <h3 className="text-2xl font-black mb-4 tracking-tighter text-white">MAYORISTA<span className="text-gray-400">ONLINE</span></h3>
+            <p className="text-gray-300 text-sm leading-relaxed mb-6">
               Somos tu mejor opción para compras mayoristas. Calidad, precio y atención personalizada en cada pedido.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-white hover:text-gray-900 transition-all">
+              <a href="#" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white hover:text-gray-900 transition-all border border-white/10">
                 <Facebook size={20} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-white hover:text-gray-900 transition-all">
+              <a href="#" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white hover:text-gray-900 transition-all border border-white/10">
                 <Instagram size={20} />
               </a>
-              <a href="https://wa.me/5491124952866" target="_blank" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-green-500 hover:text-white transition-all">
+              <a href="https://wa.me/5491124952866" target="_blank" className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-green-500 hover:text-white transition-all border border-white/10">
                 <Phone size={20} />
               </a>
             </div>
@@ -132,14 +138,14 @@ const Footer = () => {
 
           {/* Columna 2: Contacto */}
           <div>
-            <h4 className="font-bold text-lg mb-4">Contacto</h4>
-            <ul className="space-y-3 text-sm text-gray-300">
+            <h4 className="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Contacto</h4>
+            <ul className="space-y-4 text-sm text-gray-300">
               <li className="flex items-start gap-3">
-                <MapPin size={18} className="text-gray-500 mt-0.5" />
+                <MapPin size={18} className="text-gray-400 mt-0.5 shrink-0" />
                 <span>Av. Victorica 1234, Moreno,<br/>Buenos Aires, Argentina</span>
               </li>
               <li className="flex items-center gap-3">
-                <Phone size={18} className="text-gray-500" />
+                <Phone size={18} className="text-gray-400 shrink-0" />
                 <span>+54 9 11 2495-2866</span>
               </li>
             </ul>
@@ -147,14 +153,14 @@ const Footer = () => {
 
           {/* Columna 3: Mapa / Acción */}
           <div>
-            <h4 className="font-bold text-lg mb-4">Ubicación</h4>
-            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
-              <p className="text-xs text-gray-400 mb-3">Encuéntranos fácilmente en Google Maps y vení a conocer nuestro local.</p>
+            <h4 className="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Ubicación</h4>
+            <div className="bg-black/30 backdrop-blur-md p-5 rounded-xl border border-white/10 shadow-lg">
+              <p className="text-xs text-gray-300 mb-4">Encuéntranos fácilmente en Google Maps y vení a conocer nuestro local.</p>
               <a 
                 href="https://www.google.com/maps/search/?api=1&query=Moreno+Buenos+Aires" 
                 target="_blank" 
                 rel="noreferrer"
-                className="w-full py-2 bg-white text-gray-900 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                className="w-full py-3 bg-white text-gray-900 rounded-lg font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors shadow-md active:scale-95"
               >
                 <Navigation size={16} />
                 Cómo llegar
@@ -163,7 +169,7 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="border-t border-gray-800 pt-6 text-center text-xs text-gray-500">
+        <div className="border-t border-gray-700/50 pt-6 text-center text-xs text-gray-500">
           <p>&copy; {new Date().getFullYear()} MayoristaOnline. Todos los derechos reservados.</p>
         </div>
       </div>

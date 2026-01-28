@@ -111,13 +111,11 @@ const Footer = () => {
     <footer 
       className="relative text-white pt-16 pb-8 bg-cover bg-center bg-no-repeat"
       style={{
-        // Aplicamos un gradiente oscuro sobre la imagen para asegurar legibilidad perfecta
         backgroundImage: `linear-gradient(to top, rgba(17, 24, 39, 0.95), rgba(17, 24, 39, 0.85)), url('https://firebasestorage.googleapis.com/v0/b/misuperappmayorista.firebasestorage.app/o/footer_mayorista.png?alt=media&token=97089e23-4dc1-4dca-bc63-dc2e4f4adff3')`
       }}
     >
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-          {/* Columna 1: Info */}
           <div>
             <h3 className="text-2xl font-black mb-4 tracking-tighter text-white">MAYORISTA<span className="text-gray-400">ONLINE</span></h3>
             <p className="text-gray-300 text-sm leading-relaxed mb-6">
@@ -135,8 +133,6 @@ const Footer = () => {
               </a>
             </div>
           </div>
-
-          {/* Columna 2: Contacto */}
           <div>
             <h4 className="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Contacto</h4>
             <ul className="space-y-4 text-sm text-gray-300">
@@ -150,8 +146,6 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-
-          {/* Columna 3: Mapa / Acción */}
           <div>
             <h4 className="font-bold text-lg mb-6 text-white border-b border-gray-700 pb-2 inline-block">Ubicación</h4>
             <div className="bg-black/30 backdrop-blur-md p-5 rounded-xl border border-white/10 shadow-lg">
@@ -168,7 +162,6 @@ const Footer = () => {
             </div>
           </div>
         </div>
-        
         <div className="border-t border-gray-700/50 pt-6 text-center text-xs text-gray-500">
           <p>&copy; {new Date().getFullYear()} MayoristaOnline. Todos los derechos reservados.</p>
         </div>
@@ -177,7 +170,7 @@ const Footer = () => {
   );
 };
 
-// Componente de Categorías con Scroll Horizontal y Flechas
+// Componente de Categorías con Scroll Táctil
 const CategoryScroll = ({ categories, activeCategory, onSelectCategory }) => {
   const scrollRef = useRef(null);
 
@@ -193,10 +186,11 @@ const CategoryScroll = ({ categories, activeCategory, onSelectCategory }) => {
   };
 
   return (
-    <div className="relative group w-full max-w-6xl mx-auto py-6 px-8">
+    <div className="relative group w-full max-w-6xl mx-auto py-6 px-4 sm:px-8">
+      {/* Botones de navegación para desktop (ocultos en móvil si se prefiere solo táctil, pero útiles) */}
       <button 
         onClick={() => scroll('left')} 
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-100 p-2 rounded-full text-gray-700 hover:text-black hover:scale-110 active:scale-90 transition-all"
+        className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-100 p-2 rounded-full text-gray-700 hover:text-black hover:scale-110 active:scale-90 transition-all"
         aria-label="Scroll left"
       >
         <ChevronLeft size={20} />
@@ -204,9 +198,20 @@ const CategoryScroll = ({ categories, activeCategory, onSelectCategory }) => {
       
       <div 
         ref={scrollRef}
-        className="flex gap-3 overflow-hidden snap-x px-2"
-        style={{ scrollBehavior: 'smooth' }}
+        className="flex gap-3 overflow-x-auto snap-x px-2 scrollbar-hide"
+        style={{ 
+          scrollBehavior: 'smooth',
+          scrollbarWidth: 'none', /* Firefox */
+          msOverflowStyle: 'none' /* IE/Edge */
+        }}
       >
+        {/* Estilo inline para ocultar scrollbar en Webkit (Chrome/Safari) */}
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+
         {categories.map(cat => (
           <button 
             key={cat}
@@ -224,7 +229,7 @@ const CategoryScroll = ({ categories, activeCategory, onSelectCategory }) => {
 
       <button 
         onClick={() => scroll('right')} 
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-100 p-2 rounded-full text-gray-700 hover:text-black hover:scale-110 active:scale-90 transition-all"
+        className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-100 p-2 rounded-full text-gray-700 hover:text-black hover:scale-110 active:scale-90 transition-all"
         aria-label="Scroll right"
       >
         <ChevronRight size={20} />
@@ -233,6 +238,7 @@ const CategoryScroll = ({ categories, activeCategory, onSelectCategory }) => {
   );
 };
 
+// ProductCard optimizado para Grid de 2 columnas en móvil
 const ProductCard = ({ product, cart, handleAddToCart, calculateItemPrice }) => {
   const [qty, setQty] = useState(0);
   const cartItem = cart.find(i => i.productId === product.id);
@@ -247,10 +253,11 @@ const ProductCard = ({ product, cart, handleAddToCart, calculateItemPrice }) => 
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full hover:shadow-lg transition-all duration-300 group">
-      <div className="relative h-56 p-6 bg-white flex items-center justify-center">
+      {/* Imagen más compacta en móvil (h-40) */}
+      <div className="relative h-40 sm:h-56 p-4 sm:p-6 bg-white flex items-center justify-center">
         {product.hasSpecialDiscount && product.discount > 0 && (
-          <div className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2 py-1 uppercase tracking-wider z-10 rounded-sm shadow-sm">
-            Sale {product.discount}% OFF
+          <div className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-red-600 text-white text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 sm:px-2 sm:py-1 uppercase tracking-wider z-10 rounded-sm shadow-sm">
+            Sale {product.discount}%
           </div>
         )}
         <img 
@@ -260,41 +267,42 @@ const ProductCard = ({ product, cart, handleAddToCart, calculateItemPrice }) => 
         />
         {isOutOfStock && (
             <div className="absolute inset-0 bg-white/90 flex items-center justify-center">
-              <span className="text-gray-400 font-bold uppercase tracking-widest border-2 border-gray-400 px-4 py-1">Sin Stock</span>
+              <span className="text-gray-400 font-bold uppercase tracking-widest border-2 border-gray-400 px-2 py-1 text-xs sm:text-base sm:px-4">Sin Stock</span>
             </div>
         )}
       </div>
 
-      <div className="p-5 flex-grow flex flex-col justify-between bg-gray-50/50">
+      {/* Contenido más compacto (p-3 en móvil) */}
+      <div className="p-3 sm:p-5 flex-grow flex flex-col justify-between bg-gray-50/50">
         <div>
-          <h4 className="text-gray-900 font-bold mb-2 line-clamp-2 leading-snug">{product.name}</h4>
+          <h4 className="text-gray-900 font-bold mb-1 sm:mb-2 line-clamp-2 leading-tight text-xs sm:text-base">{product.name}</h4>
           
-          <div className="min-h-[3.5rem] mb-4">
+          <div className="min-h-[3rem] sm:min-h-[3.5rem] mb-2 sm:mb-4">
               {product.isUnitSaleOnly ? (
                 <div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-gray-900">
+                  <div className="flex flex-wrap items-baseline gap-1 sm:gap-2">
+                    <span className="text-lg sm:text-2xl font-bold text-gray-900">
                       ${formatPrice(previewPrice)}
                     </span>
-                    <span className="text-xs text-gray-500 font-medium">c/u</span>
+                    <span className="text-[10px] sm:text-xs text-gray-500 font-medium">c/u</span>
                   </div>
                   {product.discount > 0 && (
-                    <span className="text-xs text-gray-400 line-through">${formatPrice(unitPrice)} c/u</span>
+                    <span className="text-[10px] sm:text-xs text-gray-400 line-through">${formatPrice(unitPrice)} c/u</span>
                   )}
                 </div>
               ) : (
                 <div>
-                  <div className="flex items-baseline gap-2">
-                    <span className={`text-2xl font-bold text-gray-900`}>
+                  <div className="flex flex-wrap items-baseline gap-1 sm:gap-2">
+                    <span className={`text-lg sm:text-2xl font-bold text-gray-900`}>
                         ${formatPrice(previewPrice)}
                     </span>
-                    <span className="text-xs text-gray-500 font-medium">c/u</span>
-                    {isWholesaleApplied && <span className="text-[10px] font-bold bg-green-100 text-green-800 px-1 rounded border border-green-200">MAYORISTA</span>}
+                    <span className="text-[10px] sm:text-xs text-gray-500 font-medium">c/u</span>
+                    {isWholesaleApplied && <span className="text-[9px] sm:text-[10px] font-bold bg-green-100 text-green-800 px-1 rounded border border-green-200">MAYORISTA</span>}
                   </div>
                   
                   {!isWholesaleApplied && wholesaleQty > 0 && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Lleva {wholesaleQty}+ a <span className="font-bold text-gray-900">${formatPrice(wholesalePrice)} c/u</span>
+                    <div className="text-[10px] sm:text-xs text-gray-500 mt-1 leading-tight">
+                      Lleva {wholesaleQty}+ a <span className="font-bold text-gray-900">${formatPrice(wholesalePrice)}</span>
                     </div>
                   )}
                 </div>
@@ -302,26 +310,26 @@ const ProductCard = ({ product, cart, handleAddToCart, calculateItemPrice }) => 
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
             {isOutOfStock ? (
-              <button disabled className="w-full bg-gray-200 text-gray-400 py-2.5 rounded text-sm font-medium cursor-not-allowed">
+              <button disabled className="w-full bg-gray-200 text-gray-400 py-2 sm:py-2.5 rounded text-xs sm:text-sm font-medium cursor-not-allowed">
                 Agotado
               </button>
             ) : (
-              <div className="flex items-center gap-2 h-11">
+              <div className="flex items-center gap-1 sm:gap-2 h-9 sm:h-11">
                 <div className="flex items-center border border-gray-300 rounded bg-white h-full flex-shrink-0">
                   <button 
-                  className="w-8 h-full hover:bg-gray-100 text-gray-600 transition-colors font-bold active:bg-gray-200"
+                  className="w-6 sm:w-8 h-full hover:bg-gray-100 text-gray-600 transition-colors font-bold active:bg-gray-200 text-sm sm:text-base"
                   onClick={() => setQty(Math.max(0, qty - 1))}
                   >-</button>
                   <input 
                   type="number" 
-                  className="w-10 text-center text-sm focus:outline-none font-medium h-full" 
+                  className="w-8 sm:w-10 text-center text-xs sm:text-sm focus:outline-none font-medium h-full p-0" 
                   value={qty}
                   onChange={(e) => setQty(Number(e.target.value))}
                   />
                   <button 
-                  className="w-8 h-full hover:bg-gray-100 text-gray-600 transition-colors font-bold active:bg-gray-200"
+                  className="w-6 sm:w-8 h-full hover:bg-gray-100 text-gray-600 transition-colors font-bold active:bg-gray-200 text-sm sm:text-base"
                   onClick={() => setQty(qty + 1)}
                   >+</button>
                 </div>
@@ -331,14 +339,14 @@ const ProductCard = ({ product, cart, handleAddToCart, calculateItemPrice }) => 
                   setQty(0);
                 }}
                 disabled={qty === 0}
-                className={`flex-grow h-full rounded text-sm font-bold tracking-wide transition-all active:scale-95 duration-100 ${
+                className={`flex-grow h-full rounded text-[10px] sm:text-sm font-bold tracking-wide transition-all active:scale-95 duration-100 flex items-center justify-center ${
                   qty > 0 
                   ? 'bg-gray-900 text-white hover:bg-black shadow-lg hover:shadow-xl' 
                   : 'bg-gray-200 text-gray-400'
                 }`}
                 >
-                  {/* CAMBIO: Texto siempre "AÑADIR" */}
-                  {cartQty > 0 ? 'AÑADIR +' : 'AÑADIR'}
+                  {/* TEXTO CORREGIDO: Siempre "AÑADIR" */}
+                  AÑADIR
                 </button>
               </div>
             )}
@@ -454,7 +462,6 @@ const CheckoutContent = ({
 
       {checkoutStep === 0 && (
         <div className="space-y-4 animate-fadeIn">
-            {/* CAMBIO: Datos del Comprador -> Cliente */}
             <label className="block text-sm font-bold text-gray-900 uppercase tracking-wide">Datos del Cliente</label>
             <div className="relative">
               <User className="absolute left-4 top-3.5 text-gray-400" size={18} />
@@ -486,7 +493,6 @@ const CheckoutContent = ({
 
             {checkoutData.deliveryType === 'Delivery' && (
               <div className="space-y-3 pt-2">
-                  {/* CAMBIO: Campos separados Calle, Altura, Entrecalles */}
                   <div className="flex gap-3">
                     <input 
                     className="w-2/3 p-3 bg-gray-50 border border-gray-200 rounded-lg focus:border-gray-900 outline-none" 
@@ -943,7 +949,7 @@ export default function App() {
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{[1,2,3,4].map(i => <div key={i} className="h-96 bg-gray-100 rounded-xl animate-pulse" />)}</div>
            ) : currentProducts.length > 0 ? (
              <>
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 animate-fadeIn" key={activeCategory + currentPage}>
+               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-x-6 gap-y-6 sm:gap-y-10 animate-fadeIn" key={activeCategory + currentPage}>
                  {currentProducts.map(product => (
                    <ProductCard key={product.id} product={product} cart={cart} handleAddToCart={handleAddToCart} calculateItemPrice={calculateItemPrice} />
                  ))}

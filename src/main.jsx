@@ -1,10 +1,13 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom' // <--- Importante
 import App from './App.jsx'
-import './index.css'  // <--- ¡ESTA ES LA LÍNEA MÁGICA QUE FALTA!
+import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter> {/* <--- Envolvemos la App */}
+      <App />
+    </BrowserRouter>
   </React.StrictMode>,
 )

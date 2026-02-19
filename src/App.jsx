@@ -1,4 +1,5 @@
-import admin from './admin.jsx';
+import { Routes, Route } from "react-router-dom";
+import AdminDashboard from './admin.jsx';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { initializeApp } from "firebase/app";
 import { 
@@ -593,6 +594,8 @@ const CheckoutContent = ({
 };
 
 // --- COMPONENTE PRINCIPAL APP ---
+
+
 
 export default function App() {
   const [user, setUser] = useState(null);

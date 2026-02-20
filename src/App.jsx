@@ -228,6 +228,41 @@ const CategoryScroll = ({ categories, activeCategory, onSelectCategory }) => {
 
 // ProductCard optimizado para Grid de 2 columnas en móvil
 const ProductCard = ({ product, cart, handleAddToCart, calculateItemPrice }) => {
+
+  const images = product.images && product.images.length > 0 
+  ? product.images 
+  : [product.imageUrl];
+
+const [currentIndex, setCurrentIndex] = useState(0);
+const [touchStartX, setTouchStartX] = useState(null);
+
+const nextImage = () => {
+  setCurrentIndex(prev => (prev + 1) % images.length);
+};
+
+const prevImage = () => {
+  setCurrentIndex(prev => 
+    prev === 0 ? images.length - 1 : prev - 1
+  );
+};
+
+const handleTouchStart = (e) => {
+  setTouchStartX(e.targetTouches[0].clientX);
+};
+
+const handleTouchEnd = (e) => {
+  const touchEnd = e.changedTouches[0].clientX;
+  if (!touchStartX) return;
+
+  if (touchStartX - touchEnd > 50) {
+    nextImage();
+  }
+
+  if (touchStartX - touchEnd < -50) {
+    prevImage();
+  }
+};
+
   const [qty, setQty] = useState(0);
   const cartItem = cart.find(i => i.productId === product.id);
   const cartQty = cartItem ? cartItem.quantity : 0;
@@ -248,11 +283,30 @@ const ProductCard = ({ product, cart, handleAddToCart, calculateItemPrice }) => 
             Sale {product.discount}%
           </div>
         )}
-        <img 
-          src={product.imageUrl} 
-          alt={product.name} 
-          className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-500"
-        />
+      <img 
+  src={images[currentIndex]} 
+  alt={product.name}
+  onTouchStart={handleTouchStart}
+  onTouchEnd={handleTouchEnd}
+  className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-500"
+/>
+{images.length > 1 && (
+  <>
+    <button
+      onClick={prevImage}
+      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 backdrop-blur-sm rounded-full p-1 shadow-md hover:scale-110 active:scale-95 transition hidden lg:flex"
+    >
+      <ChevronLeft size={18} />
+    </button>
+
+    <button
+      onClick={nextImage}
+      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 backdrop-blur-sm rounded-full p-1 shadow-md hover:scale-110 active:scale-95 transition hidden lg:flex"
+    >
+      <ChevronRight size={18} />
+    </button>
+  </>
+)}
         {isOutOfStock && (
             <div className="absolute inset-0 bg-white/90 flex items-center justify-center">
               <span className="text-gray-400 font-bold uppercase tracking-widest border-2 border-gray-400 px-2 py-1 text-xs sm:text-base sm:px-4">Sin Stock</span>
@@ -941,7 +995,7 @@ export default function App() {
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{[1,2,3,4].map(i => <div key={i} className="h-96 bg-gray-100 rounded-xl animate-pulse" />)}</div>
            ) : currentProducts.length > 0 ? (
              <>
-               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-x-6 gap-y-6 sm:gap-y-10 animate-fadeIn" key={activeCategory + currentPage}>
+               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-x-6 gap-y-6 sm:gap-y-10 animate-fadeIn" key={activeCategory + currentPage}>
                  {currentProducts.map(product => (
                    <ProductCard key={product.id} product={product} cart={cart} handleAddToCart={handleAddToCart} calculateItemPrice={calculateItemPrice} />
                  ))}

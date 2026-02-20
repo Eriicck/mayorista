@@ -6,23 +6,22 @@ import {
 } from "firebase/firestore";
 import { 
   Search, X, LayoutDashboard, Package, Image as ImageIcon, LogOut, Plus, Edit, Trash2, AlertTriangle, 
-  Store as StoreIcon, Ban, Eye, EyeOff, FileSpreadsheet, Check, AlertCircle
+  Store as StoreIcon, Ban, Eye, EyeOff, FileSpreadsheet, Check, AlertCircle, ChevronLeft, ChevronRight,
+  Download
 } from 'lucide-react';
-
-
 
 // --- COMPONENTES UI COMPARTIDOS EN ADMIN ---
 
 export const Modal = ({ isOpen, onClose, title, children, footer }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-fadeIn">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh] overflow-hidden">
         <div className="flex justify-between items-center p-5 border-b border-gray-100">
           <h3 className="text-xl font-bold text-gray-900">{title}</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-900 active:scale-90"><X size={24} /></button>
         </div>
-        <div className="p-5 overflow-y-auto flex-grow custom-scrollbar">{children}</div>
+        <div className="p-5 overflow-y-auto flex-grow">{children}</div>
         {footer && <div className="p-5 border-t border-gray-100 bg-gray-50 rounded-b-xl flex justify-end gap-3">{footer}</div>}
       </div>
     </div>
@@ -41,14 +40,11 @@ export const AdminLogin = ({ onLoginSuccess, onCancel }) => {
     e.preventDefault();
     setLoading(true); 
     setError('');
-    
-    // Acceso de respaldo (Hardcoded para emergencias/pruebas)
     if (email === 'admin@admin.com' && password === '123456') { 
       onLoginSuccess(); 
       setLoading(false); 
       return; 
     }
-    
     try { 
       await signInWithEmailAndPassword(auth, email, password); 
       onLoginSuccess(); 
@@ -63,9 +59,7 @@ export const AdminLogin = ({ onLoginSuccess, onCancel }) => {
   return (
     <div className="fixed inset-0 bg-gray-900 flex items-center justify-center z-50 p-4">
        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
-          <button onClick={onCancel} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-            <X size={24} />
-          </button>
+          <button onClick={onCancel} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><X size={24} /></button>
           <div className="text-center mb-8">
             <h2 className="text-3xl font-black text-gray-900 tracking-tighter">ADMINISTRACIÓN</h2>
           </div>
@@ -83,12 +77,10 @@ export const AdminLogin = ({ onLoginSuccess, onCancel }) => {
                   <AlertCircle size={16}/>{error}
                 </div>
              )}
-             <div className="flex gap-3 pt-4">
-                <button type="submit" disabled={loading} className="w-full py-3 bg-gray-900 text-white font-bold rounded-lg hover:bg-black transition-colors shadow-lg disabled:opacity-50">
-                  {loading ? 'Entrando...' : 'Ingresar'}
-                </button>
-             </div>
-             <div className="text-center mt-4 pt-4 border-t border-gray-100">
+             <button type="submit" disabled={loading} className="w-full py-3 bg-gray-900 text-white font-bold rounded-lg hover:bg-black transition-colors shadow-lg disabled:opacity-50">
+               {loading ? 'Entrando...' : 'Ingresar'}
+             </button>
+             <div className="text-center pt-4 border-t border-gray-100">
                 <button type="button" onClick={onCancel} className="text-sm font-bold text-gray-500 hover:text-gray-900 flex items-center justify-center gap-2 w-full">
                   <StoreIcon size={16} /> Volver a la Tienda
                 </button>
@@ -178,17 +170,17 @@ const ProductForm = ({ product, onSave, onCancel, categories }) => {
            )}
         </div>
         <div className="md:col-span-2">
-            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Imágenes</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Imágenes (URLs)</label>
             <div className="flex gap-2 mb-3">
-               <input value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} className="flex-grow p-2 border rounded outline-none focus:border-gray-900" placeholder="URL de la imagen..." />
-               <button onClick={addImage} className="bg-gray-900 text-white px-4 rounded font-bold hover:bg-black text-sm">Agregar</button>
+               <input value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} className="flex-grow p-2 border rounded outline-none focus:border-gray-900" placeholder="https://..." />
+               <button type="button" onClick={addImage} className="bg-gray-900 text-white px-4 rounded font-bold hover:bg-black text-sm">Agregar</button>
             </div>
             {formData.images.length > 0 && (
                <div className="flex gap-2 overflow-x-auto pb-2">
                   {formData.images.map((img, idx) => (
                      <div key={idx} className="relative w-20 h-20 flex-shrink-0 group border rounded overflow-hidden">
                         <img src={img} className="w-full h-full object-cover" alt="thumb" />
-                        <button onClick={() => removeImage(idx)} className="absolute top-0 right-0 bg-red-600 text-white p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button" onClick={() => removeImage(idx)} className="absolute top-0 right-0 bg-red-600 text-white p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                            <X size={12} />
                         </button>
                      </div>
@@ -202,22 +194,22 @@ const ProductForm = ({ product, onSave, onCancel, categories }) => {
         </div>
       </div>
       <div className="flex justify-end gap-3 pt-6 border-t mt-4">
-         <button onClick={onCancel} className="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-lg">Cancelar</button>
-         <button onClick={() => onSave({ ...formData, imageUrl: formData.images[0] || '' })} className="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-lg hover:bg-black">Guardar</button>
+         <button type="button" onClick={onCancel} className="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-lg">Cancelar</button>
+         <button type="button" onClick={() => onSave({ ...formData, imageUrl: formData.images[0] || '' })} className="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-lg hover:bg-black">Guardar</button>
       </div>
     </div>
   );
 };
 
 const StockStatCard = ({ title, value, subtext, color, icon: Icon, onClick, clickable }) => (
-    <div onClick={clickable ? onClick : undefined} className={`p-6 rounded-2xl border ${color} bg-white shadow-sm flex items-start justify-between transition-all duration-200 ${clickable ? 'cursor-pointer hover:shadow-md hover:scale-[1.02] active:scale-95' : ''}`}>
+    <div onClick={clickable ? onClick : undefined} className={`p-5 rounded-xl border ${color} bg-white shadow-sm flex items-start justify-between transition-all duration-200 ${clickable ? 'cursor-pointer hover:shadow-md hover:scale-[1.02] active:scale-95' : ''}`}>
         <div>
             <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">{title}</p>
             <h3 className="text-3xl font-black text-gray-900">{value}</h3>
-            {subtext && <p className="text-xs text-gray-400 mt-2 font-medium">{subtext}</p>}
+            {subtext && <p className="text-xs text-gray-400 mt-1 font-medium">{subtext}</p>}
         </div>
         <div className={`p-3 rounded-xl ${color.replace('border-', 'bg-').replace('-200', '-50')} text-gray-800`}>
-            <Icon size={24} />
+            <Icon size={22} />
         </div>
     </div>
 );
@@ -225,36 +217,94 @@ const StockStatCard = ({ title, value, subtext, color, icon: Icon, onClick, clic
 // --- COMPONENTE PRINCIPAL DEL DASHBOARD ---
 
 export default function AdminDashboard({ onLogout }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  // ✅ MEJORA 1: sidebar colapsa al hacer click en cualquier parte del panel
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [productFilter, setProductFilter] = useState('all'); 
+  // ✅ MEJORA 2: subcategorías de stock en sidebar
+  const [productFilter, setProductFilter] = useState('all');
+  const [productsSubmenuOpen, setProductsSubmenuOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null); 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExcelInfoOpen, setIsExcelInfoOpen] = useState(false);
   const fileInputRef = useRef(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
 
   const showNotif = (msg, type = 'info') => {
     setNotification({ show: true, message: msg, type });
-    setTimeout(() => setNotification(n => ({ ...n, show: false })), 3000);
+    setTimeout(() => setNotification(n => ({ ...n, show: false })), 3500);
   };
 
-  // Cargar datos en tiempo real
+  // Si no está logueado, mostrar login
+  if (!isLoggedIn) {
+    return (
+      <AdminLogin 
+        onLoginSuccess={() => setIsLoggedIn(true)} 
+        onCancel={() => window.location.href = '/'} 
+      />
+    );
+  }
+
+  return <AdminPanel 
+    activeTab={activeTab} setActiveTab={setActiveTab}
+    items={items} setItems={setItems}
+    searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+    currentPage={currentPage} setCurrentPage={setCurrentPage}
+    itemsPerPage={itemsPerPage}
+    sidebarCollapsed={sidebarCollapsed} setSidebarCollapsed={setSidebarCollapsed}
+    productFilter={productFilter} setProductFilter={setProductFilter}
+    productsSubmenuOpen={productsSubmenuOpen} setProductsSubmenuOpen={setProductsSubmenuOpen}
+    editingItem={editingItem} setEditingItem={setEditingItem}
+    isModalOpen={isModalOpen} setIsModalOpen={setIsModalOpen}
+    isExcelInfoOpen={isExcelInfoOpen} setIsExcelInfoOpen={setIsExcelInfoOpen}
+    fileInputRef={fileInputRef}
+    notification={notification}
+    showNotif={showNotif}
+    onLogout={() => setIsLoggedIn(false)}
+  />;
+}
+
+function AdminPanel({
+  activeTab, setActiveTab, items, setItems, searchTerm, setSearchTerm,
+  currentPage, setCurrentPage, itemsPerPage, sidebarCollapsed, setSidebarCollapsed,
+  productFilter, setProductFilter, productsSubmenuOpen, setProductsSubmenuOpen,
+  editingItem, setEditingItem, isModalOpen, setIsModalOpen,
+  isExcelInfoOpen, setIsExcelInfoOpen,
+  fileInputRef, notification, showNotif, onLogout
+}) {
+
   useEffect(() => {
     const collectionName = activeTab === 'banners' ? 'banners' : 'products';
     const ref = collection(db, `artifacts/${APP_ID_DB}/public/data/${collectionName}`);
     const q = query(ref, orderBy(collectionName === 'products' ? 'name' : 'order', 'asc'));
-    
     const unsub = onSnapshot(q, (snapshot) => { 
-        setItems(snapshot.docs.map(d => ({id: d.id, ...d.data()}))); 
+      setItems(snapshot.docs.map(d => ({id: d.id, ...d.data()}))); 
     });
     return () => unsub();
   }, [activeTab]);
 
-  // Carga masiva por Excel
+  // ✅ MEJORA 3: Descarga el modelo de Excel de ejemplo
+  const downloadExcelTemplate = () => {
+    const headers = ['Nombre', 'Categoria', 'Subcategoria', 'PrecioUnitario', 'PrecioMayorista', 'CantidadMayorista', 'Stock', 'Imagen', 'Descripcion', 'SoloUnidad', 'Visible'];
+    const example = ['Arroz Gallo Oro 1kg', 'Almacén', 'Arroz', '500', '420', '6', '100', 'https://url-imagen.com/arroz.jpg', 'Arroz largo fino', 'NO', 'SI'];
+    const example2 = ['Birome Bic Trazos', 'Librería', 'Escritura', '150', '120', '12', '50', 'https://url-imagen.com/birome.jpg', 'Birome punta fina azul', 'NO', 'SI'];
+    
+    const csvContent = [headers, example, example2].map(row => row.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'modelo_productos.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotif('Modelo descargado. Podés abrirlo en Excel.', 'success');
+  };
+
   const handleExcelUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -266,11 +316,9 @@ export default function AdminDashboard({ onLogout }) {
           const wb = XLSX.read(evt.target.result, { type: 'binary' });
           const data = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
           if (data.length === 0) return showNotif("Archivo vacío", "error");
-          
           const batch = writeBatch(db);
           const productsRef = collection(db, `artifacts/${APP_ID_DB}/public/data/products`);
           let count = 0;
-          
           data.forEach(row => {
               const productData = {
                   name: row.Nombre || row.name || 'Sin Nombre', 
@@ -283,27 +331,26 @@ export default function AdminDashboard({ onLogout }) {
                   imageUrl: row.Imagen || row.imageUrl || '', 
                   images: row.Imagen ? [row.Imagen] : [], 
                   description: row.Descripcion || row.description || '',
-                  isUnitSaleOnly: row.SoloUnidad === 'SI', 
+                  isUnitSaleOnly: String(row.SoloUnidad).toUpperCase() === 'SI', 
                   hasSpecialDiscount: false, 
                   discount: 0, 
                   isBestSeller: false, 
-                  isVisible: row.Visible !== 'NO' // Por defecto es visible a menos que diga explícitamente NO
+                  isVisible: String(row.Visible).toUpperCase() !== 'NO'
               };
               batch.set(doc(productsRef), productData);
               count++;
           });
-          
           await batch.commit(); 
-          showNotif(`${count} productos importados`, "success"); 
+          showNotif(`✓ ${count} productos importados correctamente`, "success"); 
           e.target.value = null; 
         } catch (error) { 
-            console.error(error);
-            showNotif("Error al procesar el Excel", "error"); 
+          console.error(error);
+          showNotif("Error al procesar el archivo", "error"); 
         }
       };
       reader.readAsBinaryString(file);
     } catch (error) { 
-        alert("Para usar esta función, necesitas instalar la librería xlsx: npm install xlsx"); 
+      showNotif("Instalá la librería xlsx: npm install xlsx", "error"); 
     }
   };
 
@@ -312,235 +359,373 @@ export default function AdminDashboard({ onLogout }) {
     const ref = collection(db, `artifacts/${APP_ID_DB}/public/data/${collectionName}`);
     try {
       if (editingItem && editingItem.id) { 
-          await updateDoc(doc(ref, editingItem.id), data); 
-          showNotif("Producto actualizado correctamente", "success"); 
+        await updateDoc(doc(ref, editingItem.id), data); 
+        showNotif("✓ Producto actualizado", "success"); 
       } else { 
-          if(activeTab === 'banners' && !data.order) data.order = items.length + 1; 
-          await addDoc(ref, data); 
-          showNotif("Producto creado correctamente", "success"); 
+        if(activeTab === 'banners' && !data.order) data.order = items.length + 1; 
+        await addDoc(ref, data); 
+        showNotif("✓ Producto creado", "success"); 
       }
       setIsModalOpen(false); 
       setEditingItem(null);
     } catch (e) { 
-        showNotif("Error al guardar en la base de datos", "error"); 
+      showNotif("Error al guardar", "error"); 
     }
   };
 
   const handleDelete = async (id) => {
-    if(!window.confirm("¿Estás seguro de que deseas eliminar este elemento de forma permanente?")) return;
+    if(!window.confirm("¿Eliminar este producto permanentemente?")) return;
     const collectionName = activeTab === 'banners' ? 'banners' : 'products';
     try { 
-        await deleteDoc(doc(db, `artifacts/${APP_ID_DB}/public/data/${collectionName}`, id)); 
-        showNotif("Elemento eliminado", "info"); 
+      await deleteDoc(doc(db, `artifacts/${APP_ID_DB}/public/data/${collectionName}`, id)); 
+      showNotif("Elemento eliminado", "info"); 
     } catch(e) { 
-        showNotif("Error al eliminar", "error"); 
+      showNotif("Error al eliminar", "error"); 
     }
   };
 
-  // Filtrado y Búsqueda
   const filteredItems = useMemo(() => {
     let result = items;
     if (activeTab === 'products') {
-        if (productFilter === 'outOfStock') result = result.filter(i => (i.stock || 0) <= 0);
-        else if (productFilter === 'lowStock') result = result.filter(i => (i.stock || 0) > 0 && (i.stock || 0) <= 5);
+      if (productFilter === 'outOfStock') result = result.filter(i => (i.stock || 0) <= 0);
+      else if (productFilter === 'lowStock') result = result.filter(i => (i.stock || 0) > 0 && (i.stock || 0) <= 5);
     }
-    if (searchTerm) {
-        result = result.filter(i => (i.name || '').toLowerCase().includes(searchTerm.toLowerCase()));
-    }
+    if (searchTerm) result = result.filter(i => (i.name || '').toLowerCase().includes(searchTerm.toLowerCase()));
     return result;
   }, [items, searchTerm, productFilter, activeTab]);
 
-  const paginatedItems = useMemo(() => filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredItems, currentPage]);
+  const paginatedItems = useMemo(() => filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredItems, currentPage, itemsPerPage]);
   
-  // Estadísticas del Dashboard
   const dashboardStats = useMemo(() => ({ 
-      total: items.length, 
-      outOfStock: items.filter(i => (i.stock || 0) <= 0).length, 
-      lowStock: items.filter(i => (i.stock || 0) > 0 && (i.stock || 0) <= 5).length 
+    total: items.length, 
+    outOfStock: items.filter(i => (i.stock || 0) <= 0).length, 
+    lowStock: items.filter(i => (i.stock || 0) > 0 && (i.stock || 0) <= 5).length 
   }), [items]);
 
   const handleStatClick = (filter) => { 
-      setProductFilter(filter); 
-      setActiveTab('products'); 
-      setSearchTerm(''); 
-      setCurrentPage(1); 
+    setProductFilter(filter); 
+    setActiveTab('products');
+    setProductsSubmenuOpen(true);
+    setSearchTerm(''); 
+    setCurrentPage(1); 
   };
 
+  // ✅ Etiqueta del filtro activo
+  const filterLabel = productFilter === 'outOfStock' ? 'Agotados' : productFilter === 'lowStock' ? 'Stock Crítico' : 'Todos los productos';
+
   return (
-    <div className="flex h-screen bg-gray-100 font-sans">
-       {/* Notificación */}
-       {notification.show && (
-         <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-full shadow-xl font-medium text-sm flex items-center gap-2 ${notification.type === 'success' ? 'bg-gray-900 text-white' : notification.type === 'error' ? 'bg-red-600 text-white' : 'bg-white text-gray-900 border border-gray-200'}`}>
-           {notification.type === 'success' && <Check size={16}/>}
-           {notification.type === 'error' && <AlertCircle size={16}/>}
-           {notification.message}
-         </div>
-       )}
-       {/* BARRA LATERAL (SIDEBAR) */}
-       <aside onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-gray-900 text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-300 ease-in-out cursor-pointer relative overflow-hidden shadow-2xl z-50`}>
-          <div className={`h-20 flex items-center ${sidebarCollapsed ? 'justify-center' : 'px-6 justify-between'} border-b border-gray-800/50 backdrop-blur-sm`}>
-             {!sidebarCollapsed && <span className="font-bold tracking-tight">ADMIN PANEL</span>}
-             {sidebarCollapsed && <StoreIcon size={24} className="text-gray-400" />}
-          </div>
-          <nav className="flex-grow p-4 space-y-2" onClick={(e) => e.stopPropagation()}>
-             {[
-                 { id: 'dashboard', icon: LayoutDashboard, label: 'Inicio' }, 
-                 { id: 'products', icon: Package, label: 'Productos' }, 
-                 { id: 'banners', icon: ImageIcon, label: 'Banners' }
-             ].map(item => (
-               <button key={item.id} onClick={() => { setActiveTab(item.id); if(item.id !== 'products') setProductFilter('all'); }} className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center px-0' : 'justify-start px-4'} gap-3 py-3 rounded-xl transition-all ${activeTab === item.id ? 'bg-white text-gray-900 font-bold shadow-lg' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}`} title={sidebarCollapsed ? item.label : ''}>
-                  <item.icon size={20} /> {!sidebarCollapsed && <span>{item.label}</span>}
-               </button>
-             ))}
-          </nav>
-          <div className="p-4 border-t border-gray-800/50 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
-             <button onClick={onLogout} className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start px-4'} gap-2 py-2 text-gray-400 hover:text-red-400 transition-colors text-sm`}>
-                 <LogOut size={20} /> {!sidebarCollapsed && "Cerrar Sesión"}
-             </button>
-          </div>
-       </aside>
+    <div className="flex h-screen bg-gray-100 font-sans overflow-hidden">
 
-       {/* CONTENIDO PRINCIPAL */}
-       <div className="flex-grow flex flex-col h-screen overflow-hidden">
-          {/* Cabecera Móvil */}
-          <header className="bg-white shadow-sm p-4 flex md:hidden justify-between items-center z-20">
-              <span className="font-black text-gray-900">PANEL ADMIN</span>
-              <button onClick={onLogout}><LogOut size={20} className="text-gray-500" /></button>
-          </header>
+      {/* Notificación flotante */}
+      {notification.show && (
+        <div className={`fixed top-5 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-full shadow-xl font-medium text-sm flex items-center gap-2 transition-all ${notification.type === 'success' ? 'bg-gray-900 text-white' : notification.type === 'error' ? 'bg-red-600 text-white' : 'bg-white text-gray-900 border border-gray-200'}`}>
+          {notification.type === 'success' && <Check size={15}/>}
+          {notification.type === 'error' && <AlertCircle size={15}/>}
+          {notification.message}
+        </div>
+      )}
+
+      {/* ✅ SIDEBAR — click en cualquier parte lo colapsa/expande */}
+      <aside 
+        onClick={() => setSidebarCollapsed(c => !c)} 
+        className={`${sidebarCollapsed ? 'w-16' : 'w-64'} bg-gray-900 text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-300 ease-in-out cursor-pointer shadow-2xl z-50 select-none`}
+      >
+        {/* Header sidebar */}
+        <div className={`h-16 flex items-center border-b border-gray-800/50 flex-shrink-0 ${sidebarCollapsed ? 'justify-center' : 'px-5 gap-3'}`}>
+          <StoreIcon size={20} className="text-gray-400 flex-shrink-0" />
+          {!sidebarCollapsed && <span className="font-bold tracking-tight text-sm">ADMIN PANEL</span>}
+          {!sidebarCollapsed && <ChevronLeft size={16} className="ml-auto text-gray-500" />}
+          {sidebarCollapsed && <span className="sr-only">Expandir</span>}
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex-grow p-3 space-y-1 overflow-hidden" onClick={e => e.stopPropagation()}>
           
-          <main className="flex-grow overflow-y-auto p-4 md:p-8">
-             {/* VISTA: INICIO / DASHBOARD */}
-             {activeTab === 'dashboard' && (
-                <div className="space-y-8 animate-fadeIn h-full">
-                   <div className="flex justify-between items-end">
-                       <div>
-                           <h2 className="text-3xl font-black text-gray-900 tracking-tight">Hola, Admin</h2>
-                           <p className="text-gray-500 mt-1">Resumen general del estado de tu negocio.</p>
-                       </div>
-                       <button onClick={() => { setActiveTab('products'); setProductFilter('all'); }} className="bg-gray-900 text-white px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-black shadow-lg">
-                           Ver Inventario
-                       </button>
-                   </div>
-                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      <StockStatCard title="Agotados" value={dashboardStats.outOfStock || 0} subtext="Clic para ver detalles" color="border-red-200" icon={Ban} clickable={true} onClick={() => handleStatClick('outOfStock')} />
-                      <StockStatCard title="Stock Crítico" value={dashboardStats.lowStock || 0} subtext="Menos de 5 unidades" color="border-yellow-200" icon={AlertTriangle} clickable={true} onClick={() => handleStatClick('lowStock')} />
-                      <StockStatCard title="Total Productos" value={dashboardStats.total || 0} subtext="Activos en catálogo" color="border-gray-200" icon={Package} clickable={true} onClick={() => { setActiveTab('products'); setProductFilter('all'); }} />
-                   </div>
-                </div>
-             )}
+          {/* Inicio */}
+          <button 
+            onClick={() => { setActiveTab('dashboard'); setProductFilter('all'); }}
+            className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all text-sm ${activeTab === 'dashboard' ? 'bg-white text-gray-900 font-bold shadow' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'} ${sidebarCollapsed ? 'justify-center' : ''}`}
+            title="Inicio"
+          >
+            <LayoutDashboard size={18} className="flex-shrink-0" />
+            {!sidebarCollapsed && <span>Inicio</span>}
+          </button>
 
-             {/* VISTA: PRODUCTOS / BANNERS */}
-             {activeTab !== 'dashboard' && (
-                <div className="h-full flex flex-col animate-fadeIn">
-                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                      <div>
-                          <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">{activeTab === 'products' ? 'Inventario de Productos' : 'Gestor de Banners'}</h2>
-                      </div>
-                      <div className="flex gap-2 w-full md:w-auto">
-                         {activeTab === 'products' && (
-                             <>
-                               <input type="file" accept=".xlsx, .xls" ref={fileInputRef} onChange={handleExcelUpload} className="hidden" />
-                               <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold text-sm shadow-md">
-                                   <FileSpreadsheet size={16} /> Importar Excel
-                               </button>
-                             </>
-                         )}
-                         <button onClick={() => { setEditingItem({}); setIsModalOpen(true); }} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black font-bold text-sm shadow-md">
-                             <Plus size={16} /> Agregar Nuevo
-                         </button>
-                      </div>
-                   </div>
+          {/* ✅ MEJORA 2: Productos con submenú de stock */}
+          <div>
+            <button 
+              onClick={() => { setActiveTab('products'); setProductFilter('all'); setProductsSubmenuOpen(o => !o); }}
+              className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all text-sm ${activeTab === 'products' ? 'bg-white text-gray-900 font-bold shadow' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'} ${sidebarCollapsed ? 'justify-center' : ''}`}
+              title="Productos"
+            >
+              <Package size={18} className="flex-shrink-0" />
+              {!sidebarCollapsed && (
+                <>
+                  <span className="flex-grow text-left">Productos</span>
+                  <ChevronRight size={14} className={`transition-transform ${productsSubmenuOpen ? 'rotate-90' : ''}`} />
+                </>
+              )}
+            </button>
 
-                   {/* Buscador */}
-                   <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4 flex flex-col md:flex-row gap-4 items-center">
-                      <div className="relative flex-grow w-full">
-                          <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
-                          <input className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-gray-900 transition-all" placeholder="Buscar por nombre..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                      </div>
-                   </div>
+            {/* Submenú de stock — solo visible si sidebar expandido y menú abierto */}
+            {!sidebarCollapsed && productsSubmenuOpen && (
+              <div className="ml-4 mt-1 space-y-0.5 border-l border-gray-700/50 pl-3">
+                <button
+                  onClick={() => { setProductFilter('all'); setCurrentPage(1); }}
+                  className={`w-full text-left text-xs py-2 px-2 rounded-lg transition-all flex items-center gap-2 ${productFilter === 'all' ? 'text-white font-bold bg-gray-800' : 'text-gray-400 hover:text-white hover:bg-gray-800/40'}`}
+                >
+                  <Package size={12} /> Todos ({dashboardStats.total})
+                </button>
+                <button
+                  onClick={() => { setProductFilter('outOfStock'); setCurrentPage(1); }}
+                  className={`w-full text-left text-xs py-2 px-2 rounded-lg transition-all flex items-center gap-2 ${productFilter === 'outOfStock' ? 'text-white font-bold bg-gray-800' : 'text-gray-400 hover:text-white hover:bg-gray-800/40'}`}
+                >
+                  <Ban size={12} className="text-red-400" /> Agotados ({dashboardStats.outOfStock})
+                </button>
+                <button
+                  onClick={() => { setProductFilter('lowStock'); setCurrentPage(1); }}
+                  className={`w-full text-left text-xs py-2 px-2 rounded-lg transition-all flex items-center gap-2 ${productFilter === 'lowStock' ? 'text-white font-bold bg-gray-800' : 'text-gray-400 hover:text-white hover:bg-gray-800/40'}`}
+                >
+                  <AlertTriangle size={12} className="text-yellow-400" /> Críticos ({dashboardStats.lowStock})
+                </button>
+              </div>
+            )}
+          </div>
 
-                   {/* Tabla de Resultados */}
-                   <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex-grow overflow-hidden flex flex-col">
-                      <div className="overflow-x-auto flex-grow">
-                         <table className="w-full text-left border-collapse">
-                            <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-bold sticky top-0 shadow-sm z-10">
-                                <tr>
-                                    <th className="p-4 border-b w-20">Imagen</th>
-                                    <th className="p-4 border-b">Nombre del Producto</th>
-                                    <th className="p-4 border-b text-right">Precio</th>
-                                    <th className="p-4 border-b text-center">Stock</th>
-                                    <th className="p-4 border-b text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {paginatedItems.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="5" className="p-8 text-center text-gray-400">No se encontraron resultados</td>
-                                    </tr>
-                                ) : (
-                                    paginatedItems.map(item => (
-                                        <tr key={item.id} className={`hover:bg-gray-50 transition-colors ${item.isVisible === false ? 'opacity-60 bg-gray-100' : ''}`}>
-                                            <td className="p-4">
-                                                <div className="w-12 h-12 bg-gray-100 rounded-lg border overflow-hidden">
-                                                    {item.imageUrl || item.images?.[0] ? 
-                                                        <img src={item.imageUrl || item.images[0]} className="w-full h-full object-cover" alt="img" /> : 
-                                                        <ImageIcon className="w-full h-full p-3 text-gray-300"/>
-                                                    }
-                                                </div>
-                                            </td>
-                                            <td className="p-4 font-medium text-gray-800">
-                                                {item.name} 
-                                                {item.isVisible === false && <span className="inline-flex items-center gap-1 ml-2 text-xs font-bold text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full"><EyeOff size={12}/> Oculto</span>}
-                                                {(item.stock || 0) <= 0 && <span className="inline-flex items-center gap-1 ml-2 text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full border border-red-100">Agotado</span>}
-                                            </td>
-                                            <td className="p-4 text-right font-medium text-gray-600">${item.unitPrice}</td>
-                                            <td className="p-4 text-center">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.stock > 10 ? 'bg-green-100 text-green-700' : item.stock > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                                                    {item.stock}
-                                                </span>
-                                            </td>
-                                            <td className="p-4 text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <button onClick={() => { setEditingItem(item); setIsModalOpen(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={18} /></button>
-                                                    <button onClick={() => handleDelete(item.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={18} /></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                         </table>
-                      </div>
-                      
-                      {/* Paginación */}
-                      <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50">
-                          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-4 py-2 font-bold text-sm text-gray-600 bg-white border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-100 transition-colors">
-                              Anterior
-                          </button>
-                          <span className="text-sm font-bold text-gray-500">Página {currentPage}</span>
-                          <button disabled={paginatedItems.length < itemsPerPage} onClick={() => setCurrentPage(p => p + 1)} className="px-4 py-2 font-bold text-sm text-gray-600 bg-white border border-gray-200 rounded-lg disabled:opacity-50 hover:bg-gray-100 transition-colors">
-                              Siguiente
-                          </button>
-                      </div>
-                   </div>
-                </div>
-             )}
-          </main>
-       </div>
-       
-       {/* Modal de Creación/Edición */}
-       <Modal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingItem(null); }} title={editingItem?.id ? 'Editar Producto' : 'Nuevo Producto'}>
-          {activeTab === 'products' ? (
-              <ProductForm 
-                  product={editingItem?.id ? editingItem : null} 
-                  onSave={handleSave} 
-                  onCancel={() => setIsModalOpen(false)} 
-                  categories={[...new Set(items.map(i => i.category).filter(Boolean))]} 
-              />
-          ) : (
-              <div className="text-center p-8 text-gray-500">Formulario de Banners en desarrollo...</div>
+          {/* Banners */}
+          <button 
+            onClick={() => { setActiveTab('banners'); setProductFilter('all'); setProductsSubmenuOpen(false); }}
+            className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all text-sm ${activeTab === 'banners' ? 'bg-white text-gray-900 font-bold shadow' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'} ${sidebarCollapsed ? 'justify-center' : ''}`}
+            title="Banners"
+          >
+            <ImageIcon size={18} className="flex-shrink-0" />
+            {!sidebarCollapsed && <span>Banners</span>}
+          </button>
+        </nav>
+
+        {/* Cerrar sesión */}
+        <div className="p-3 border-t border-gray-800/50 flex-shrink-0" onClick={e => e.stopPropagation()}>
+          <button 
+            onClick={onLogout} 
+            className={`w-full flex items-center gap-2 py-2.5 px-3 text-gray-400 hover:text-red-400 transition-colors text-sm rounded-xl hover:bg-gray-800/50 ${sidebarCollapsed ? 'justify-center' : ''}`}
+            title="Cerrar sesión"
+          >
+            <LogOut size={18} className="flex-shrink-0" />
+            {!sidebarCollapsed && <span>Cerrar Sesión</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* CONTENIDO PRINCIPAL */}
+      <div className="flex-grow flex flex-col h-screen overflow-hidden">
+        
+        {/* Header móvil */}
+        <header className="bg-white shadow-sm px-4 py-3 flex md:hidden justify-between items-center z-20 flex-shrink-0">
+          <span className="font-black text-gray-900 text-sm">PANEL ADMIN</span>
+          <button onClick={onLogout}><LogOut size={20} className="text-gray-500" /></button>
+        </header>
+        
+        <main className="flex-grow overflow-y-auto p-4 md:p-6">
+
+          {/* DASHBOARD */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Hola, Admin 👋</h2>
+                <p className="text-gray-500 mt-1 text-sm">Resumen del estado de tu negocio.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <StockStatCard title="Agotados" value={dashboardStats.outOfStock} subtext="Sin stock" color="border-red-200" icon={Ban} clickable onClick={() => handleStatClick('outOfStock')} />
+                <StockStatCard title="Stock Crítico" value={dashboardStats.lowStock} subtext="Menos de 5 unidades" color="border-yellow-200" icon={AlertTriangle} clickable onClick={() => handleStatClick('lowStock')} />
+                <StockStatCard title="Total Productos" value={dashboardStats.total} subtext="En catálogo" color="border-gray-200" icon={Package} clickable onClick={() => { setActiveTab('products'); setProductFilter('all'); }} />
+              </div>
+            </div>
           )}
-       </Modal>
+
+          {/* PRODUCTOS / BANNERS */}
+          {activeTab !== 'dashboard' && (
+            <div className="flex flex-col h-full gap-4">
+
+              {/* Encabezado */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tight">
+                    {activeTab === 'products' ? 'Inventario de Productos' : 'Gestor de Banners'}
+                  </h2>
+                  {activeTab === 'products' && productFilter !== 'all' && (
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full mt-1 inline-block ${productFilter === 'outOfStock' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-700'}`}>
+                      Filtro: {filterLabel}
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {activeTab === 'products' && (
+                    <>
+                      {/* ✅ MEJORA 3: botones de excel con modelo descargable */}
+                      <button 
+                        onClick={downloadExcelTemplate}
+                        className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold text-xs shadow"
+                        title="Descargar modelo CSV para rellenar"
+                      >
+                        <Download size={14} /> Modelo
+                      </button>
+                      <input type="file" accept=".xlsx, .xls, .csv" ref={fileInputRef} onChange={handleExcelUpload} className="hidden" />
+                      <button 
+                        onClick={() => fileInputRef.current.click()} 
+                        className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold text-xs shadow"
+                      >
+                        <FileSpreadsheet size={14} /> Importar Excel
+                      </button>
+                    </>
+                  )}
+                  <button 
+                    onClick={() => { setEditingItem({}); setIsModalOpen(true); }} 
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-900 text-white rounded-lg hover:bg-black font-bold text-xs shadow"
+                  >
+                    <Plus size={14} /> Nuevo
+                  </button>
+                </div>
+              </div>
+
+              {/* ✅ Info de columnas Excel — desplegable */}
+              {activeTab === 'products' && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl overflow-hidden">
+                  <button 
+                    onClick={() => setIsExcelInfoOpen(o => !o)}
+                    className="w-full flex items-center justify-between px-4 py-2.5 text-blue-800 text-xs font-bold hover:bg-blue-100 transition-colors"
+                  >
+                    <span>📋 ¿Cómo preparar el archivo para importar?</span>
+                    <ChevronRight size={14} className={`transition-transform ${isExcelInfoOpen ? 'rotate-90' : ''}`} />
+                  </button>
+                  {isExcelInfoOpen && (
+                    <div className="px-4 pb-4 text-xs text-blue-900 space-y-2">
+                      <p>Descargá el <strong>Modelo CSV</strong> con el botón azul, abrilo en Excel y completá tus productos. Las columnas son:</p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 mt-2">
+                        {[
+                          ['Nombre', 'Nombre del producto', 'obligatorio'],
+                          ['Categoria', 'Ej: Almacén', 'obligatorio'],
+                          ['Subcategoria', 'Ej: Arroz', 'opcional'],
+                          ['PrecioUnitario', 'Precio c/u en $', 'obligatorio'],
+                          ['PrecioMayorista', 'Precio mayor en $', 'opcional'],
+                          ['CantidadMayorista', 'Cant mínima mayorista', 'opcional'],
+                          ['Stock', 'Cantidad disponible', 'obligatorio'],
+                          ['Imagen', 'URL de la imagen', 'opcional'],
+                          ['Descripcion', 'Texto descriptivo', 'opcional'],
+                          ['SoloUnidad', 'SI o NO', 'opcional'],
+                          ['Visible', 'SI o NO (default SI)', 'opcional'],
+                        ].map(([col, desc, req]) => (
+                          <div key={col} className={`p-2 rounded-lg border text-[10px] ${req === 'obligatorio' ? 'bg-white border-blue-300' : 'bg-blue-50/50 border-blue-200'}`}>
+                            <p className="font-black text-blue-900">{col}</p>
+                            <p className="text-blue-700">{desc}</p>
+                            <p className={`font-bold mt-0.5 ${req === 'obligatorio' ? 'text-red-500' : 'text-gray-400'}`}>{req}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-blue-700 mt-2">⚠️ Guardá el archivo como <strong>.xlsx o .csv</strong> antes de importar.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Buscador */}
+              <div className="bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100 flex gap-3 items-center">
+                <Search className="text-gray-400 flex-shrink-0" size={17} />
+                <input 
+                  className="flex-grow outline-none text-sm text-gray-800 placeholder-gray-400 bg-transparent" 
+                  placeholder="Buscar por nombre..." 
+                  value={searchTerm} 
+                  onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                />
+                {searchTerm && <button onClick={() => setSearchTerm('')} className="text-gray-400 hover:text-gray-700"><X size={16}/></button>}
+              </div>
+
+              {/* Tabla */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-grow">
+                <div className="overflow-x-auto flex-grow">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-bold sticky top-0">
+                      <tr>
+                        <th className="p-3 border-b w-16">Imagen</th>
+                        <th className="p-3 border-b">Nombre</th>
+                        <th className="p-3 border-b text-right">Precio</th>
+                        <th className="p-3 border-b text-center">Stock</th>
+                        <th className="p-3 border-b text-right">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {paginatedItems.length === 0 ? (
+                        <tr><td colSpan="5" className="p-10 text-center text-gray-400 text-sm">No se encontraron resultados</td></tr>
+                      ) : (
+                        paginatedItems.map(item => (
+                          <tr key={item.id} className={`hover:bg-gray-50 transition-colors ${item.isVisible === false ? 'opacity-50 bg-gray-50' : ''}`}>
+                            <td className="p-3">
+                              <div className="w-11 h-11 bg-gray-100 rounded-lg border overflow-hidden">
+                                {item.imageUrl || item.images?.[0] 
+                                  ? <img src={item.imageUrl || item.images[0]} className="w-full h-full object-cover" alt="img" /> 
+                                  : <ImageIcon className="w-full h-full p-2.5 text-gray-300"/>
+                                }
+                              </div>
+                            </td>
+                            <td className="p-3 text-sm font-medium text-gray-800">
+                              {item.name}
+                              {item.isVisible === false && <span className="ml-2 text-[10px] font-bold text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded-full"><EyeOff size={10} className="inline mr-0.5"/>Oculto</span>}
+                              {(item.stock || 0) <= 0 && <span className="ml-2 text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full border border-red-100">Agotado</span>}
+                              {(item.stock || 0) > 0 && (item.stock || 0) <= 5 && <span className="ml-2 text-[10px] font-bold text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded-full border border-yellow-100">⚠ Crítico</span>}
+                            </td>
+                            <td className="p-3 text-right text-sm text-gray-600">${item.unitPrice}</td>
+                            <td className="p-3 text-center">
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${(item.stock || 0) > 10 ? 'bg-green-100 text-green-700' : (item.stock || 0) > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                                {item.stock ?? 0}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right">
+                              <div className="flex justify-end gap-1">
+                                <button onClick={() => { setEditingItem(item); setIsModalOpen(true); }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={16} /></button>
+                                <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Paginación */}
+                <div className="p-3 border-t border-gray-100 flex justify-between items-center bg-gray-50 flex-shrink-0">
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-4 py-1.5 font-bold text-sm text-gray-600 bg-white border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-100 transition-colors">
+                    Anterior
+                  </button>
+                  <span className="text-xs font-bold text-gray-400">
+                    Página {currentPage} · {filteredItems.length} resultados
+                  </span>
+                  <button disabled={paginatedItems.length < itemsPerPage} onClick={() => setCurrentPage(p => p + 1)} className="px-4 py-1.5 font-bold text-sm text-gray-600 bg-white border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-100 transition-colors">
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Modal edición/creación */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => { setIsModalOpen(false); setEditingItem(null); }} 
+        title={editingItem?.id ? 'Editar Producto' : 'Nuevo Producto'}
+      >
+        {activeTab === 'products' ? (
+          <ProductForm 
+            product={editingItem?.id ? editingItem : null} 
+            onSave={handleSave} 
+            onCancel={() => { setIsModalOpen(false); setEditingItem(null); }} 
+            categories={[...new Set(items.map(i => i.category).filter(Boolean))]} 
+          />
+        ) : (
+          <div className="text-center p-8 text-gray-500">Formulario de Banners en desarrollo...</div>
+        )}
+      </Modal>
     </div>
   );
 }

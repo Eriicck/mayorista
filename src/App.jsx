@@ -1,15 +1,13 @@
 import { Routes, Route } from "react-router-dom";
+import { auth, db, APP_ID_DB } from './firebase.js';
 import AdminDashboard from './admin.jsx';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { initializeApp } from "firebase/app";
 import { 
-  getAuth, 
   signInAnonymously, 
   signInWithCustomToken, 
   onAuthStateChanged 
 } from "firebase/auth";
 import { 
-  getFirestore, 
   doc, 
   addDoc, 
   updateDoc, 
@@ -42,21 +40,7 @@ import {
   Navigation
 } from 'lucide-react';
 
-// --- CONFIGURACIÓN FIREBASE ---
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCMNcQoIV9hYsZYHcYr_wmLn71qSJHebIs",
-  authDomain: "pedido-digital-online.firebaseapp.com",
-  projectId: "pedido-digital-online",
-  storageBucket: "pedido-digital-online.firebasestorage.app",
-  messagingSenderId: "612281107703",
-  appId: "1:612281107703:web:240f0979aaf640986fbff2",
-  measurementId: "G-8DVXBZZE93"
-};
 
-const app = initializeApp(FIREBASE_CONFIG);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const APP_ID_DB = "1:612281107703:web:240f0979aaf640986fbff2";
 
 // --- UTILIDADES ---
 const formatPrice = (price) => {
@@ -106,6 +90,8 @@ const Notification = ({ message, type, show }) => {
     </div>
   );
 };
+
+
 
 // Componente Footer Profesional con Background Image
 const Footer = () => {
@@ -858,6 +844,8 @@ export default function App() {
   };
 
   return (
+    <Routes>
+      <Route path="/" element={
     <div className="min-h-screen flex flex-col bg-white font-sans text-gray-900">
       <Notification {...notification} />
       <header className="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-gray-100">
@@ -994,14 +982,21 @@ export default function App() {
             checkoutStep={checkoutStep} 
             setCheckoutStep={setCheckoutStep} 
             checkoutData={checkoutData} 
-            setCheckoutData={setCheckoutData} 
-            cart={cart} 
-            clearCart={clearCart} 
-            setModalState={setModalState} 
-            showNotif={showNotif} 
+            setCheckoutData={setCheckoutData}
+            cart={cart}
+            clearCart={clearCart}
+            setModalState={setModalState}
+            showNotif={showNotif}
           />
         )}
       </Modal>
+
     </div>
+  } /> {/* <-- ESTA LÍNEA CIERRA TU TIENDA */}
+
+  {/* <-- ESTA LÍNEA AGREGA TU ADMIN --> */}
+  <Route path="/admin" element={<AdminDashboard />} />
+
+</Routes>
   );
 }

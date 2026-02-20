@@ -1,30 +1,15 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db, APP_ID_DB } from './firebase.js';
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { 
-  getFirestore, doc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, orderBy, writeBatch 
+  doc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, orderBy, writeBatch 
 } from "firebase/firestore";
 import { 
   Search, X, LayoutDashboard, Package, Image as ImageIcon, LogOut, Plus, Edit, Trash2, AlertTriangle, 
   Store as StoreIcon, Ban, Eye, EyeOff, FileSpreadsheet, Check, AlertCircle
 } from 'lucide-react';
 
-// --- CONFIGURACIÓN FIREBASE ---
-// Debe ser la misma que usas en App.jsx para que apunten a la misma base de datos
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCMNcQoIV9hYsZYHcYr_wmLn71qSJHebIs",
-  authDomain: "pedido-digital-online.firebaseapp.com",
-  projectId: "pedido-digital-online",
-  storageBucket: "pedido-digital-online.firebasestorage.app",
-  messagingSenderId: "612281107703",
-  appId: "1:612281107703:web:240f0979aaf640986fbff2",
-  measurementId: "G-8DVXBZZE93"
-};
 
-const app = initializeApp(FIREBASE_CONFIG);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const APP_ID_DB = "1:612281107703:web:240f0979aaf640986fbff2";
 
 // --- COMPONENTES UI COMPARTIDOS EN ADMIN ---
 
@@ -239,7 +224,7 @@ const StockStatCard = ({ title, value, subtext, color, icon: Icon, onClick, clic
 
 // --- COMPONENTE PRINCIPAL DEL DASHBOARD ---
 
-export default function AdminDashboard({ onLogout, showNotif }) {
+export default function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [items, setItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -249,7 +234,13 @@ export default function AdminDashboard({ onLogout, showNotif }) {
   const [productFilter, setProductFilter] = useState('all'); 
   const [editingItem, setEditingItem] = useState(null); 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const fileInputRef = useRef(null); 
+  const fileInputRef = useRef(null);
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'info' });
+
+  const showNotif = (msg, type = 'info') => {
+    setNotification({ show: true, message: msg, type });
+    setTimeout(() => setNotification(n => ({ ...n, show: false })), 3000);
+  };
 
   // Cargar datos en tiempo real
   useEffect(() => {
@@ -377,6 +368,14 @@ export default function AdminDashboard({ onLogout, showNotif }) {
 
   return (
     <div className="flex h-screen bg-gray-100 font-sans">
+       {/* Notificación */}
+       {notification.show && (
+         <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-full shadow-xl font-medium text-sm flex items-center gap-2 ${notification.type === 'success' ? 'bg-gray-900 text-white' : notification.type === 'error' ? 'bg-red-600 text-white' : 'bg-white text-gray-900 border border-gray-200'}`}>
+           {notification.type === 'success' && <Check size={16}/>}
+           {notification.type === 'error' && <AlertCircle size={16}/>}
+           {notification.message}
+         </div>
+       )}
        {/* BARRA LATERAL (SIDEBAR) */}
        <aside onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-gray-900 text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-300 ease-in-out cursor-pointer relative overflow-hidden shadow-2xl z-50`}>
           <div className={`h-20 flex items-center ${sidebarCollapsed ? 'justify-center' : 'px-6 justify-between'} border-b border-gray-800/50 backdrop-blur-sm`}>

@@ -7,7 +7,7 @@ import {
 import { 
   Search, X, LayoutDashboard, Package, Image as ImageIcon, LogOut, Plus, Edit, Trash2, 
   AlertTriangle, Store as StoreIcon, Ban, Eye, EyeOff, FileSpreadsheet, Check, AlertCircle,
-  ChevronRight, ChevronLeft, Download, Menu
+  ChevronRight, ChevronLeft, Download, Menu, Monitor, Smartphone, ToggleLeft, ToggleRight
 } from 'lucide-react';
 
 // ─────────────────────────────────────────
@@ -264,6 +264,118 @@ const ProductForm = ({ product, onSave, onCancel, categories }) => {
       <div className="flex justify-end gap-3 pt-5 border-t mt-2">
         <button type="button" onClick={onCancel} className="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition-colors text-sm">Cancelar</button>
         <button type="button" onClick={handleSave} className="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-lg hover:bg-black transition-colors text-sm shadow">Guardar cambios</button>
+      </div>
+    </div>
+  );
+};
+
+
+// ─────────────────────────────────────────
+// FORMULARIO DE BANNER
+// ─────────────────────────────────────────
+const BannerForm = ({ banner, onSave, onCancel, totalBanners }) => {
+  const [formData, setFormData] = useState({
+    title: banner?.title || '',
+    imageDesktop: banner?.imageDesktop || banner?.imageUrl || '',
+    imageMobile: banner?.imageMobile || '',
+    linkUrl: banner?.linkUrl || '',
+    order: banner?.order !== undefined ? String(banner.order) : String(totalBanners + 1),
+    active: banner?.active !== false,
+  });
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleSave = () => {
+    if (!formData.imageDesktop.trim()) return alert('La imagen de escritorio es obligatoria');
+    onSave({
+      title: formData.title,
+      imageUrl: formData.imageDesktop,
+      imageDesktop: formData.imageDesktop,
+      imageMobile: formData.imageMobile,
+      linkUrl: formData.linkUrl,
+      order: Number(formData.order) || totalBanners + 1,
+      active: formData.active,
+    });
+  };
+
+  const inputCls = "w-full p-2.5 border border-gray-200 rounded-lg mt-1 outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors text-sm";
+  const labelCls = "block text-xs font-bold text-gray-500 uppercase tracking-wide";
+
+  return (
+    <div className="space-y-5">
+
+      {/* Previews lado a lado */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <p className="text-xs font-bold text-gray-500 uppercase mb-1.5 flex items-center gap-1"><Monitor size={12}/> Escritorio</p>
+          <div className="w-full h-28 rounded-xl overflow-hidden bg-gray-100 border-2 border-dashed border-gray-200 flex items-center justify-center">
+            {formData.imageDesktop ? (
+              <img src={formData.imageDesktop} alt="desktop" className="w-full h-full object-cover" onError={e => e.target.style.opacity='0.3'} />
+            ) : (
+              <div className="text-center text-gray-300"><Monitor size={28} className="mx-auto mb-1"/><p className="text-[10px]">Sin imagen</p></div>
+            )}
+          </div>
+        </div>
+        <div>
+          <p className="text-xs font-bold text-gray-500 uppercase mb-1.5 flex items-center gap-1"><Smartphone size={12}/> Mobile</p>
+          <div className="w-full h-28 rounded-xl overflow-hidden bg-gray-100 border-2 border-dashed border-gray-200 flex items-center justify-center">
+            {formData.imageMobile ? (
+              <img src={formData.imageMobile} alt="mobile" className="w-full h-full object-cover" onError={e => e.target.style.opacity='0.3'} />
+            ) : (
+              <div className="text-center text-gray-300"><Smartphone size={28} className="mx-auto mb-1"/><p className="text-[10px]">Opcional</p></div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+
+        <div>
+          <label className={labelCls}>Título del banner</label>
+          <input name="title" value={formData.title} onChange={handleChange} className={inputCls} placeholder="Ej: Promoción de verano" />
+          <p className="text-xs text-gray-400 mt-1">Solo para identificarlo en el admin, no se muestra en la tienda</p>
+        </div>
+
+        <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl space-y-3">
+          <p className="text-xs font-bold text-blue-700 uppercase flex items-center gap-1.5"><Monitor size={13}/> Imagen Escritorio <span className="text-red-500">*</span></p>
+          <input name="imageDesktop" value={formData.imageDesktop} onChange={handleChange} className={inputCls + " bg-white"} placeholder="https://url-imagen-ancha.com/banner.jpg" />
+          <p className="text-[11px] text-blue-500">Recomendado: 1400×400px — proporción panorámica</p>
+        </div>
+
+        <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
+          <p className="text-xs font-bold text-gray-600 uppercase flex items-center gap-1.5"><Smartphone size={13}/> Imagen Mobile <span className="text-gray-400 font-normal normal-case">(opcional)</span></p>
+          <input name="imageMobile" value={formData.imageMobile} onChange={handleChange} className={inputCls + " bg-white"} placeholder="https://url-imagen-cuadrada.com/banner-mobile.jpg" />
+          <p className="text-[11px] text-gray-400">Recomendado: 800×600px — si no cargás, se usa la de escritorio</p>
+        </div>
+
+        <div>
+          <label className={labelCls}>Link al hacer click <span className="font-normal text-gray-400 normal-case">(opcional)</span></label>
+          <input name="linkUrl" value={formData.linkUrl} onChange={handleChange} className={inputCls} placeholder="https:// o dejá vacío" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Orden</label>
+            <input type="text" inputMode="numeric" name="order" value={formData.order} onChange={handleChange} className={inputCls} placeholder="1" />
+            <p className="text-xs text-gray-400 mt-1">Menor número = primero</p>
+          </div>
+          <div className="flex flex-col justify-end pb-1">
+            <label className={`flex items-center gap-2 cursor-pointer p-3 rounded-xl border-2 transition-all ${formData.active ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+              <input type="checkbox" name="active" checked={formData.active} onChange={handleChange} className="hidden" />
+              {formData.active ? <ToggleRight size={22} className="text-green-500 flex-shrink-0"/> : <ToggleLeft size={22} className="text-gray-400 flex-shrink-0"/>}
+              <span className={`text-sm font-bold ${formData.active ? 'text-green-700' : 'text-gray-500'}`}>{formData.active ? 'Activo' : 'Inactivo'}</span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <div className="flex justify-end gap-3 pt-4 border-t">
+        <button type="button" onClick={onCancel} className="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition-colors text-sm">Cancelar</button>
+        <button type="button" onClick={handleSave} className="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-lg hover:bg-black transition-colors text-sm shadow">Guardar Banner</button>
       </div>
     </div>
   );
@@ -702,7 +814,8 @@ export default function AdminDashboard() {
                 )}
               </div>
 
-              {/* Tabla */}
+              {/* Tabla PRODUCTOS */}
+              {activeTab === 'products' && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-grow min-h-0">
                 <div className="overflow-auto flex-grow">
                   <table className="w-full text-left border-collapse min-w-[500px]">
@@ -755,19 +868,83 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
-
                 <div className="p-3 border-t border-gray-100 flex justify-between items-center bg-gray-50 flex-shrink-0">
-                  <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-3 py-1.5 font-bold text-xs text-gray-600 bg-white border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-100 transition-colors">
-                    Anterior
-                  </button>
-                  <span className="text-xs text-gray-400 font-medium">
-                    Pag. {currentPage} · {filteredItems.length} resultados
-                  </span>
-                  <button disabled={paginatedItems.length < itemsPerPage} onClick={() => setCurrentPage(p => p + 1)} className="px-3 py-1.5 font-bold text-xs text-gray-600 bg-white border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-100 transition-colors">
-                    Siguiente
-                  </button>
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-3 py-1.5 font-bold text-xs text-gray-600 bg-white border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-100 transition-colors">Anterior</button>
+                  <span className="text-xs text-gray-400 font-medium">Pag. {currentPage} · {filteredItems.length} resultados</span>
+                  <button disabled={paginatedItems.length < itemsPerPage} onClick={() => setCurrentPage(p => p + 1)} className="px-3 py-1.5 font-bold text-xs text-gray-600 bg-white border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-100 transition-colors">Siguiente</button>
                 </div>
               </div>
+              )}
+
+              {/* Tabla BANNERS */}
+              {activeTab === 'banners' && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-grow min-h-0">
+                <div className="overflow-auto flex-grow">
+                  <table className="w-full text-left border-collapse min-w-[560px]">
+                    <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-bold">
+                      <tr>
+                        <th className="p-3 border-b w-20">Preview</th>
+                        <th className="p-3 border-b">Título</th>
+                        <th className="p-3 border-b text-center w-24">Imágenes</th>
+                        <th className="p-3 border-b text-center w-16">Orden</th>
+                        <th className="p-3 border-b text-center w-20">Estado</th>
+                        <th className="p-3 border-b text-right w-20">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {paginatedItems.length === 0 ? (
+                        <tr><td colSpan="6" className="p-10 text-center text-gray-400 text-sm">No hay banners aún. Creá el primero con el botón + Nuevo</td></tr>
+                      ) : (
+                        paginatedItems.map(item => (
+                          <tr key={item.id} className={`hover:bg-gray-50 transition-colors ${item.active === false ? 'opacity-50' : ''}`}>
+                            <td className="p-3">
+                              <div className="w-16 h-10 bg-gray-100 rounded-lg border overflow-hidden">
+                                {item.imageDesktop || item.imageUrl
+                                  ? <img src={item.imageDesktop || item.imageUrl} className="w-full h-full object-cover" alt="" />
+                                  : <ImageIcon className="w-full h-full p-2 text-gray-300" />}
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <p className="text-sm font-medium text-gray-800">{item.title || <span className="text-gray-300 italic">Sin título</span>}</p>
+                              {item.linkUrl && <p className="text-[10px] text-blue-400 truncate max-w-[200px] mt-0.5">{item.linkUrl}</p>}
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <span className={`flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${item.imageDesktop || item.imageUrl ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-400'}`}>
+                                  <Monitor size={9}/> PC
+                                </span>
+                                <span className={`flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded ${item.imageMobile ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                                  <Smartphone size={9}/> {item.imageMobile ? 'OK' : '—'}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="text-sm font-bold text-gray-600">{item.order ?? '—'}</span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.active !== false ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-500'}`}>
+                                {item.active !== false ? 'Activo' : 'Inactivo'}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right">
+                              <div className="flex justify-end gap-1">
+                                <button onClick={() => { setEditingItem(item); setIsModalOpen(true); }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={16} /></button>
+                                <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="p-3 border-t border-gray-100 flex justify-between items-center bg-gray-50 flex-shrink-0">
+                  <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="px-3 py-1.5 font-bold text-xs text-gray-600 bg-white border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-100 transition-colors">Anterior</button>
+                  <span className="text-xs text-gray-400 font-medium">{filteredItems.length} banners</span>
+                  <button disabled={paginatedItems.length < itemsPerPage} onClick={() => setCurrentPage(p => p + 1)} className="px-3 py-1.5 font-bold text-xs text-gray-600 bg-white border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-100 transition-colors">Siguiente</button>
+                </div>
+              </div>
+              )}
 
             </div>
           )}
@@ -775,7 +952,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingItem(null); }} title={editingItem?.id ? 'Editar Producto' : 'Nuevo Producto'}>
+      <Modal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingItem(null); }} title={activeTab === 'banners' ? (editingItem?.id ? 'Editar Banner' : 'Nuevo Banner') : (editingItem?.id ? 'Editar Producto' : 'Nuevo Producto')}>
         {activeTab === 'products' ? (
           <ProductForm
             product={editingItem?.id ? editingItem : null}
@@ -784,7 +961,12 @@ export default function AdminDashboard() {
             categories={[...new Set(items.map(i => i.category).filter(Boolean))]}
           />
         ) : (
-          <div className="text-center p-8 text-gray-500 text-sm">Formulario de Banners en desarrollo...</div>
+          <BannerForm
+            banner={editingItem?.id ? editingItem : null}
+            onSave={handleSave}
+            onCancel={() => { setIsModalOpen(false); setEditingItem(null); }}
+            totalBanners={items.length}
+          />
         )}
       </Modal>
     </div>

@@ -178,7 +178,7 @@ const CategoryScroll = ({ categories, activeCategory, onSelectCategory }) => {
       {/* Botones de navegación para desktop (ocultos en móvil si se prefiere solo táctil, pero útiles) */}
       <button 
         onClick={() => scroll('left')} 
-        className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-100 p-2 rounded-full text-gray-700 hover:text-black hover:scale-110 active:scale-90 transition-all"
+        className="block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/50 sm:bg-white shadow-md border border-gray-100 p-1.5 sm:p-2 rounded-full text-gray-400 sm:text-gray-700 hover:text-black hover:scale-110 active:scale-90 transition-all backdrop-blur-sm"
         aria-label="Scroll left"
       >
         <ChevronLeft size={20} />
@@ -217,7 +217,7 @@ const CategoryScroll = ({ categories, activeCategory, onSelectCategory }) => {
 
       <button 
         onClick={() => scroll('right')} 
-        className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-md border border-gray-100 p-2 rounded-full text-gray-700 hover:text-black hover:scale-110 active:scale-90 transition-all"
+        className="block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/50 sm:bg-white shadow-md border border-gray-100 p-1.5 sm:p-2 rounded-full text-gray-400 sm:text-gray-700 hover:text-black hover:scale-110 active:scale-90 transition-all backdrop-blur-sm"
         aria-label="Scroll right"
       >
         <ChevronRight size={20} />
@@ -365,10 +365,12 @@ const handleTouchEnd = (e) => {
                   onClick={() => setQty(Math.max(0, qty - 1))}
                   >-</button>
                   <input 
-                  type="number" 
+                  type="text"
+                  inputMode="numeric"
                   className="w-8 sm:w-10 text-center text-xs sm:text-sm focus:outline-none font-medium h-full p-0" 
-                  value={qty}
-                  onChange={(e) => setQty(Number(e.target.value))}
+                  value={qty === 0 ? '' : qty}
+                  placeholder="0"
+                  onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setQty(v === '' ? 0 : Number(v)); }}
                   />
                   <button 
                   className="w-6 sm:w-8 h-full hover:bg-gray-100 text-gray-600 transition-colors font-bold active:bg-gray-200 text-sm sm:text-base"

@@ -1,0 +1,398 @@
+{
+  "name": "Agente Mayorista 2.0 - Textos y Audios",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["messages"],
+        "options": {"messageStatusUpdates": []}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [-1180, -440],
+      "id": "377b689b-26f0-4165-b516-d2a7a8df4380",
+      "name": "WhatsApp Trigger",
+      "webhookId": "71e38f71-73f3-4ee2-9fbe-78fb7479e112",
+      "credentials": {
+        "whatsAppTriggerApi": {"id": "8E58xYaipGOhe3Ps", "name": "WhatsApp OAuth account 2"}
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6f49808a-d559-47c6-9fda-f176101e28af",
+              "name": "sessionId",
+              "value": "={{ $json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "9a38f480-1a2b-4b1c-912b-abc123456789",
+              "name": "tipoMensaje",
+              "value": "={{ $json.messages[0].type }}",
+              "type": "string"
+            },
+            {
+              "id": "b1a2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
+              "name": "audioId",
+              "value": "={{ $json.messages[0].audio ? $json.messages[0].audio.id : '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-960, -440],
+      "id": "bda1437a-919e-42cd-9056-092f17925568",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3},
+          "conditions": [
+            {
+              "id": "97dd4d70-1388-4d6c-92be-5b6e4302c8d0",
+              "leftValue": "={{ $json.sessionId }}",
+              "rightValue": "=",
+              "operator": {"type": "string", "operation": "notEmpty", "singleValue": true}
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [-740, -440],
+      "id": "95c2ed0e-df80-4b4e-98bc-f3fb6a7edad7",
+      "name": "If 1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "id": "7dc1a9fb-cd6e-4184-b773-67c85854b42b",
+              "conditions": {
+                "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3},
+                "conditions": [
+                  {"id": "c1f72cf7-3475-4303-9d7a-cfb39c0f91a5", "leftValue": "={{ $json.tipoMensaje }}", "rightValue": "text", "operator": {"type": "string", "operation": "equals", "singleValue": true}}
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Es Texto"
+            },
+            {
+              "id": "cf149c4d-ebdf-4654-be87-e2da42c3884b",
+              "conditions": {
+                "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3},
+                "conditions": [
+                  {"id": "dd16cc4e-da45-420a-8d76-e1376880fc2b", "leftValue": "={{ $json.tipoMensaje }}", "rightValue": "audio", "operator": {"type": "string", "operation": "equals", "singleValue": true}}
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Es Audio"
+            }
+          ]
+        },
+        "fallbackOutput": 2,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [-520, -440],
+      "id": "b1b2b3b4-c1c2-d1d2-e1e2-f1f2f3f4f5f6",
+      "name": "Separador Texto / Audio"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6f49808a-d559-47c6-9fda-f176101e28af",
+              "name": "mensajeProcesado",
+              "value": "={{ $json.messages[0].text.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-160, -560],
+      "id": "t1e2x3t4-o5p6-q7r8-s9t0-u1v2w3x4y5z6",
+      "name": "Preparar Texto"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/v19.0/{{ $json.audioId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "Bearer EAAXpvZA67ZAegBQ7bPrkxUX06Gw5JEgWQgxunVTBLg5PplbgXrmP7HB0TV0GWuyJrxqUmLTaaRWYA84AqnfRBQ7WeOyNLZBxjXljxZBnduTsH5XhT6e1imlLOFCmvZA6MXlZBzxUor0w5XpwMFKicDJMJF7LaUZAB4s1vHZBVZAZCceWFHPqftTqQtHCCiRV4hewZDZD"}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-280, -280],
+      "id": "h1t2t3p4-1a2b-3c4d-5e6f-7g8h9i0j1k2l",
+      "name": "1. Obtener URL Audio",
+      "credentials": {
+        "whatsAppApi": {"id": "Phm6aEqyJRDLWI1z", "name": "WhatsApp account"}
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Authorization", "value": "Bearer EAAXpvZA67ZAegBQ7bPrkxUX06Gw5JEgWQgxunVTBLg5PplbgXrmP7HB0TV0GWuyJrxqUmLTaaRWYA84AqnfRBQ7WeOyNLZBxjXljxZBnduTsH5XhT6e1imlLOFCmvZA6MXlZBzxUor0w5XpwMFKicDJMJF7LaUZAB4s1vHZBVZAZCceWFHPqftTqQtHCCiRV4hewZDZD"}
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-40, -280],
+      "id": "h2t3t4p5-2b3c-4d5e-6f7g-8h9i0j1k2l3m",
+      "name": "2. Descargar Audio",
+      "credentials": {
+        "whatsAppApi": {"id": "Phm6aEqyJRDLWI1z", "name": "WhatsApp account"}
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.2,
+      "position": [180, -280],
+      "id": "o1p2e3n4-a5i6-7o8p-9q0r-1s2t3u4v5w6x",
+      "name": "3. Transcribir Audio",
+      "credentials": {
+        "openAiApi": {"id": "sRZCSvjSnMnaewO1", "name": "OpenAi account"}
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a3",
+              "name": "mensajeProcesado",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [400, -280],
+      "id": "a1u2d3i4-o5t6-e7x8-t9v0-a1b2c3d4e5f6",
+      "name": "Preparar Audio Transcrito"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\n\n// Leemos los datos procesados\nconst telefono = $json.sessionId || $('WhatsApp Trigger').first().json.messages[0].from;\nconst mensajeNuevo = $json.mensajeProcesado;\nconst tiempoActual = new Date().getTime();\n\n// Si es el primer mensaje, preparamos una caja de texto vacía\nif (staticData[telefono] === undefined) {\n  staticData[telefono] = { texto: \"\", ultimoTiempo: 0 };\n}\n\n// Juntamos el texto (sea tipeado o dictado por voz)\nstaticData[telefono].texto = staticData[telefono].texto + mensajeNuevo + \". \";\nstaticData[telefono].ultimoTiempo = tiempoActual;\n\nreturn {\n  telefono: telefono,\n  miTiempo: tiempoActual\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [560, -440],
+      "id": "c5f047ad-d8e8-4c9f-bbce-3233ac3607eb",
+      "name": "Anotar Mensajes"
+    },
+    {
+      "parameters": {"amount": 5},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [760, -440],
+      "id": "e2c51222-f113-46f6-a4c6-c2e67e0f7063",
+      "name": "La Sala de Espera",
+      "webhookId": "48c6d885-3928-410b-a55d-a0d523121fe9"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst telefono = $json.telefono;\nconst miTiempo = $json.miTiempo;\n\n// Si nadie más escribió en estos 5 segundos...\nif (staticData[telefono].ultimoTiempo === miTiempo) {\n  const mensajeFinal = staticData[telefono].texto;\n  \n  // Vaciamos la caja de texto\n  staticData[telefono] = { texto: \"\", ultimoTiempo: 0 };\n\n  return {\n    continuar: true,\n    mensajeAgrupado: mensajeFinal,\n    sessionId: telefono\n  };\n} else {\n  // Alguien escribió después, así que esta ejecución muere en silencio aquí\n  return {\n    continuar: false\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, -440],
+      "id": "9df40124-782e-478f-8331-7b129e21e5fb",
+      "name": "Juntar Mensajes"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3},
+          "conditions": [
+            {
+              "id": "75a28420-1d4a-4c5d-b255-474c9d94b40f",
+              "leftValue": "={{ $json.continuar }}",
+              "rightValue": "",
+              "operator": {"type": "boolean", "operation": "true", "singleValue": true}
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [1160, -440],
+      "id": "a6eb9fed-01c0-475b-9e45-c48bbf24f7e3",
+      "name": "If 2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensajeAgrupado }}",
+        "options": {
+          "systemMessage": "# IDENTIDAD Y ROL\nEres **DistriBot**, el asesor de ventas virtual estrella de nuestra **Distribuidora Mayorista**. Tu rol es ser el primer punto de contacto por WhatsApp, atendiendo consultas, verificando stock/precios y tomando pedidos de manera cálida, rápida y con un tono muy natural y porteño/argentino (usando siempre \"vos\").\n\n---\n\n# INFORMACIÓN DEL NEGOCIO\n- **Catálogo online**: https://mayoristaweb.netlify.app/ (Menciónalo SOLO UNA VEZ durante la conversación como opción para ver fotos).\n- **Métodos de pago**: Transferencia bancaria o efectivo.\n- **Promoción vigente**: 5% de descuento automático en compras que superen los $100.000 (Pesos).\n- **Envíos**: Sí hacemos envíos, los coordina el asesor al final.\n\n---\n\n# HERRAMIENTAS DISPONIBLES\n\n## 1. Google Sheets (Lista de Prod)\n- **Uso**: Verificar si hay stock y consultar el precio actualizado.\n- **Cuándo usarla**: SIEMPRE que el cliente pregunte por un producto.\n- **Cómo buscar (CRÍTICO)**: Extrae SOLO la palabra clave más corta y principal. Si piden \"1 pallet de coca cola\", envía solo la palabra \"coca\" a la herramienta.\n- **Regla**: NUNCA inventes precios ni stock. Si la herramienta no devuelve resultados, asume que está agotado.\n\n---\n\n# FLUJOS DE TRABAJO\n\n## Flujo 1: Saludo e Identificación\n1. Responder al primer mensaje de forma cálida.\n2. Si el cliente no dijo su nombre, preguntarlo sutilmente para agendarlo.\n3. Preguntar qué productos anda buscando hoy.\n\n## Flujo 2: Búsqueda y Cotización\n1. Interpretar lo que pide el cliente (incluso si tiene errores ortográficos como \"koka\" o \"pales\").\n2. Usar la herramienta \"Lista de Prod\" con una palabra clave corta.\n3. **Si hay stock**: Dar el precio, destacar que son \"precios súper económicos\" y preguntar cuántas unidades le anotas.\n4. **Si NO hay stock**: Avisar amablemente (\"Dejame revisar... uy, por el momento me quedé sin stock de eso\") y ofrecer ayuda con otra cosa.\n\n## Flujo 3: Cierre de Venta\n1. Confirmar la cantidad final deseada por el cliente.\n2. Calcular el total exacto (Precio x Cantidad).\n3. Evaluar descuento: Si el total supera los $100.000, aplicar el 5% de descuento al valor final.\n4. Enviar el resumen claro del pedido.\n5. Despedirse derivando el chat al humano para cerrar el pago.\n\n---\n\n# REGLAS DE SISTEMA Y NEGOCIO (¡ESTRICTAMENTE OBLIGATORIAS!)\n1. **Ceguera de Códigos**: IGNORA totalmente cualquier número largo que veas suelto en el sistema (como 54911...). Es el ID interno del WhatsApp, NUNCA lo menciones ni lo uses para buscar.\n2. **Cero Lenguaje Robótico**: Tienes PROHIBIDO usar frases como \"consultando mi base de datos\", \"código no encontrado\" o \"revisando inventario\". Usa expresiones humanas: \"Dejame que me fijo en el depósito...\", \"Aguantame que reviso si nos queda...\".\n3. **No Cobrar**: Tu trabajo termina al pasar el presupuesto. No pidas tarjetas ni intentes cobrar.\n\n---\n\n# DIRECTRICES DE COMUNICACIÓN\n\n## Tono y Estilo\n- **Empático y Vendedor**: Transmite confianza y buena onda.\n- **Conciso**: Es WhatsApp, mensajes breves y al grano.\n- **Formato**: Usa saltos de línea para no hacer bloques gigantes de texto.\n- **Emojis**: Úsalos para dar calidez (📦, 🛒, 📝, ✨, 👋) pero máximo 2 por mensaje.\n\n## Ejemplos de Tono\n\n**Saludo inicial:**\n> ¡Hola! 👋 Qué gusto saludarte. Soy el asistente de la distribuidora. ¿En qué te puedo ayudar hoy? ¿Buscabas algo en especial?\n\n**Confirmación de stock:**\n> ¡Sí, claro! Dejame ver... sí, tenemos stock y te sale $[Precio] cada una. (Son precios súper económicos). ¿Cuántas unidades te anoto?\n\n**Cierre de venta (Sin descuento):**\n> ¡Excelente! Ya dejé tu pedido anotado 📝. Serían [Cantidad] de [Producto] por un total de $[Total]. Te derivo con un asesor comercial para que te confirme el método de pago y coordine el envío. ¡Gracias por elegirnos!\n\n**Cierre de venta (Con descuento >$100.000):**\n> ¡Buenísimo! Ya tomé nota 📝. Como tu pedido supera los $100.000, ¡te aplicamos un 5% de descuento! El total final te queda en $[Total con descuento]. En un toque te escribe un asesor para coordinar el pago y el envío a tu local. ¡Gracias!"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [1380, -440],
+      "id": "558a0ae3-9e37-4454-bb36-4ed2749e4700",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {"model": {"__rl": true, "mode": "list", "value": "gpt-5-mini"}, "options": {}},
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [1320, -200],
+      "id": "e5c8170e-f5d2-4a61-86b4-e015ffbb3f7d",
+      "name": "IA Agente",
+      "credentials": {"openAiApi": {"id": "sRZCSvjSnMnaewO1", "name": "OpenAi account"}}
+    },
+    {
+      "parameters": {"authentication": "serviceAccount", "documentId": {"__rl": true, "value": "1g0m6V2g-_6Pt-4QYtRfrWQTSwxrtxK5DH_QtCHdk7og", "mode": "list"}, "sheetName": {"__rl": true, "value": 1488850091, "mode": "list"}, "options": {}},
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [1540, -200],
+      "id": "e0ad5dcf-facb-480c-bb3e-1456363bed86",
+      "name": "Lista de Prod",
+      "credentials": {"googleApi": {"id": "FIBpEZXcKASrtjdY", "name": "Google Sheets account"}}
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [1440, -200],
+      "id": "49a2fa9c-a36a-4581-b357-c91b7f3868eb",
+      "name": "Postgres Chat Memory",
+      "credentials": {"postgres": {"id": "Ms9noEoHZ5fSMzMZ", "name": "Postgres account 2"}}
+    },
+    {
+      "parameters": {"amount": 3},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1780, -440],
+      "id": "c8dba1c9-7882-4c49-9e6e-f0b17d4c8af1",
+      "name": "Wait"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1117466491445011",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').first().json.messages[0].from.replace('549', '54') }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [2000, -440],
+      "id": "c18fa493-bdb1-4deb-9c23-a3e8a5fc306e",
+      "name": "Send message",
+      "credentials": {"whatsAppApi": {"id": "Phm6aEqyJRDLWI1z", "name": "WhatsApp account"}}
+    }
+  ],
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [[{"node": "Edit Fields", "type": "main", "index": 0}]]
+    },
+    "Edit Fields": {
+      "main": [[{"node": "If 1", "type": "main", "index": 0}]]
+    },
+    "If 1": {
+      "main": [[{"node": "Separador Texto / Audio", "type": "main", "index": 0}]]
+    },
+    "Separador Texto / Audio": {
+      "main": [
+        [{"node": "Preparar Texto", "type": "main", "index": 0}],
+        [{"node": "1. Obtener URL Audio", "type": "main", "index": 0}]
+      ]
+    },
+    "Preparar Texto": {
+      "main": [[{"node": "Anotar Mensajes", "type": "main", "index": 0}]]
+    },
+    "1. Obtener URL Audio": {
+      "main": [[{"node": "2. Descargar Audio", "type": "main", "index": 0}]]
+    },
+    "2. Descargar Audio": {
+      "main": [[{"node": "3. Transcribir Audio", "type": "main", "index": 0}]]
+    },
+    "3. Transcribir Audio": {
+      "main": [[{"node": "Preparar Audio Transcrito", "type": "main", "index": 0}]]
+    },
+    "Preparar Audio Transcrito": {
+      "main": [[{"node": "Anotar Mensajes", "type": "main", "index": 0}]]
+    },
+    "Anotar Mensajes": {
+      "main": [[{"node": "La Sala de Espera", "type": "main", "index": 0}]]
+    },
+    "La Sala de Espera": {
+      "main": [[{"node": "Juntar Mensajes", "type": "main", "index": 0}]]
+    },
+    "Juntar Mensajes": {
+      "main": [[{"node": "If 2", "type": "main", "index": 0}]]
+    },
+    "If 2": {
+      "main": [[{"node": "AI Agent", "type": "main", "index": 0}]]
+    },
+    "AI Agent": {
+      "main": [[{"node": "Wait", "type": "main", "index": 0}]]
+    },
+    "Wait": {
+      "main": [[{"node": "Send message", "type": "main", "index": 0}]]
+    },
+    "IA Agente": {
+      "ai_languageModel": [[{"node": "AI Agent", "type": "ai_languageModel", "index": 0}]]
+    },
+    "Lista de Prod": {
+      "ai_tool": [[{"node": "AI Agent", "type": "ai_tool", "index": 0}]]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [[{"node": "AI Agent", "type": "ai_memory", "index": 0}]]
+    }
+  }
+}

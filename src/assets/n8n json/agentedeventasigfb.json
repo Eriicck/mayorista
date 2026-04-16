@@ -1,0 +1,565 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ]
+      },
+      "id": "trigger-meta-ig",
+      "name": "Facebook/IG Trigger",
+      "type": "n8n-nodes-base.facebookMessengerTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "670c538a-f01e-45fa-9461-9f9392e2eb90",
+              "name": "senderId",
+              "value": "={{ $json.message.sender.id }}",
+              "type": "string"
+            },
+            {
+              "id": "b3e51249-16a7-4b77-a877-e6f77ec65181",
+              "name": "textoBody",
+              "value": "={{ $json.message.message.text || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f51c73ad-506e-47f6-be5f-7f938b2f2165",
+              "name": "audioUrl",
+              "value": "={{ $json.message.message.attachments[0].payload.url || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "d04a8b79-58b9-436d-bca7-84a2f1b49980",
+              "name": "tipoMensaje",
+              "value": "={{ $json.message.message.attachments[0].type === 'audio' ? 'audio' : 'text' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "edit-fields-meta",
+      "name": "Preparar Datos Meta",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        300,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1e9bb1f6-ec7f-4b07-96a2-b2fa84b72115",
+                    "leftValue": "={{ $json.tipoMensaje }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Texto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c1f72e39-1667-4e94-8451-f762f0f4a827",
+                    "leftValue": "={{ $json.tipoMensaje }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "switch-meta",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        500,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "53d6741b-85df-4d51-85e8-0b61e2b5cf81",
+              "name": "mensajeProcesado",
+              "value": "={{ $json.textoBody }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prep-texto-ig",
+      "name": "Preparar Texto IG",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        740,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.audioUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "descargar-audio-ig",
+      "name": "Descargar Audio IG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        740,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "id": "transcribir-audio",
+      "name": "Transcribir Audio",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1,
+      "position": [
+        940,
+        500
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OpenAI account",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "89b531dc-2a91-4e76-ae3e-2f92f6d0f6ed",
+              "name": "mensajeProcesado",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prep-audio-ig",
+      "name": "Preparar Audio IG",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1140,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\n\nconst userId = $('Preparar Datos Meta').first().json.senderId;\nconst mensajeNuevo = $json.mensajeProcesado;\nconst tiempoActual = new Date().getTime();\n\nif (staticData[userId] === undefined) {\n  staticData[userId] = { texto: \"\", ultimoTiempo: 0 };\n}\n\nstaticData[userId].texto = staticData[userId].texto + mensajeNuevo + \". \";\nstaticData[userId].ultimoTiempo = tiempoActual;\n\nreturn {\n  userId: userId,\n  miTiempo: tiempoActual\n};"
+      },
+      "id": "anotar-mensajes-ig",
+      "name": "Anotar Mensajes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "options": {}
+      },
+      "id": "sala-espera-ig",
+      "name": "La Sala de Espera",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1520,
+        400
+      ],
+      "webhookId": "9c1b359f-c67b-402f-b40b-741ef11329bb"
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst userId = $json.userId;\nconst tiempoNodoAnterior = $json.miTiempo;\n\nif (staticData[userId].ultimoTiempo === tiempoNodoAnterior) {\n    const mensajeFinal = staticData[userId].texto;\n    staticData[userId] = undefined;\n    return {\n        continuar: true,\n        mensajeAgrupado: mensajeFinal,\n        userId: userId\n    };\n} else {\n    return { continuar: false };\n}"
+      },
+      "id": "juntar-mensajes-ig",
+      "name": "Juntar Mensajes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1700,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9d90ec6f-d65b-44ec-b4e8-89c0966a461b",
+              "leftValue": "={{ $json.continuar }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "name": "filter.operator.true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-ig",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 3.2,
+      "position": [
+        1900,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensajeAgrupado }}",
+        "options": {
+          "systemMessage": "Eres un asistente virtual de ventas experto..."
+        }
+      },
+      "id": "ai-agent-ig",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        2100,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {}
+      },
+      "id": "model-ig",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        2060,
+        640
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "OpenAI account",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableName": "chat_memory",
+        "sessionIdKey": "={{ $('Juntar Mensajes').item.json.userId }}"
+      },
+      "id": "postgres-memory-ig",
+      "name": "Postgres Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.2,
+      "position": [
+        2180,
+        640
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "Postgres account",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "Tu_ID_de_Google_Sheets",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Hoja 1",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "id": "google-sheets-tool-ig",
+      "name": "Lista de Prod",
+      "type": "n8n-nodes-base.toolGoogleSheets",
+      "typeVersion": 2,
+      "position": [
+        2340,
+        640
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Google Sheets account",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "recipient": "={{ $('Juntar Mensajes').item.json.userId }}",
+        "messageType": "RESPONSE",
+        "text": "={{ $json.output }}"
+      },
+      "id": "enviar-meta-ig",
+      "name": "Enviar Respuesta IG/FB",
+      "type": "n8n-nodes-base.facebookMessenger",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Facebook/IG Trigger": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos Meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos Meta": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Preparar Texto IG",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Descargar Audio IG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Texto IG": {
+      "main": [
+        [
+          {
+            "node": "Anotar Mensajes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Audio IG": {
+      "main": [
+        [
+          {
+            "node": "Transcribir Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribir Audio": {
+      "main": [
+        [
+          {
+            "node": "Preparar Audio IG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Audio IG": {
+      "main": [
+        [
+          {
+            "node": "Anotar Mensajes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anotar Mensajes": {
+      "main": [
+        [
+          {
+            "node": "La Sala de Espera",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "La Sala de Espera": {
+      "main": [
+        [
+          {
+            "node": "Juntar Mensajes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Juntar Mensajes": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta IG/FB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lista de Prod": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

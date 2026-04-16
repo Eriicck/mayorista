@@ -11,6 +11,17 @@ import {
 } from 'lucide-react';
 
 // ─────────────────────────────────────────
+// UTILIDADES (Aspiradora de precios)
+// ─────────────────────────────────────────
+const parsePrice = (val) => {
+  if (val === null || val === undefined || val === '') return 0;
+  if (typeof val === 'number') return val;
+  // Convierte a texto, quita $, puntos y espacios. Y si hay coma (ej: 10,50), la pasa a punto decimal.
+  const cleaned = String(val).replace(/[\$\.\s]/g, '').replace(',', '.');
+  return Number(cleaned) || 0;
+};
+
+// ─────────────────────────────────────────
 // MODAL
 // ─────────────────────────────────────────
 export const Modal = ({ isOpen, onClose, title, children }) => {
@@ -97,175 +108,159 @@ export const AdminLogin = ({ onLoginSuccess }) => {
 // FORMULARIO DE PRODUCTO
 // ─────────────────────────────────────────
 const ProductForm = ({ product, onSave, onCancel, categories }) => {
-  const initialImages = product?.images || (product?.imageUrl ? [product.imageUrl] : []);
-
-  // FIX: campos numericos como string para poder borrar y escribir libremente
-  const [formData, setFormData] = useState({
-    name: product?.name || '',
-    category: product?.category || '',
-    subcategory: product?.subcategory || '',
-    unitPrice: product?.unitPrice !== undefined ? String(product.unitPrice) : '',
-    wholesalePrice: product?.wholesalePrice !== undefined ? String(product.wholesalePrice) : '',
-    wholesaleQuantity: product?.wholesaleQuantity !== undefined ? String(product.wholesaleQuantity) : '',
-    stock: product?.stock !== undefined ? String(product.stock) : '',
-    images: initialImages,
-    description: product?.description || '',
-    discount: product?.discount !== undefined ? String(product.discount) : '0',
-    isBestSeller: product?.isBestSeller || false,
-    hasSpecialDiscount: product?.hasSpecialDiscount || false,
-    isUnitSaleOnly: product?.isUnitSaleOnly || false,
-    isVisible: product?.isVisible !== false,
+  const [formData, setFormData] = useState(product || {
+    name: '', category: '', subcategory: '', 
+    priceBulto: '', pricePallet: '', priceRetiro: '', // <-- NUEVOS PRECIOS
+    unitsPerBox: '', boxesPerPallet: '',              // <-- NUEVAS CANTIDADES
+    stock: '', imageUrl: '', images: [], description: '',
+    isUnitSaleOnly: false, hasSpecialDiscount: false, discount: '', 
+    isBestSeller: false, isVisible: true
   });
   const [newImageUrl, setNewImageUrl] = useState('');
 
-  // FIX: no convierte a Number mientras escribe
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const addImage = () => {
     if (newImageUrl.trim()) {
-      setFormData(prev => ({ ...prev, images: [...prev.images, newImageUrl.trim()] }));
+      setFormData(prev => ({
+        ...prev,
+        images: [...(prev.images || []), newImageUrl.trim()],
+        imageUrl: prev.images?.length === 0 ? newImageUrl.trim() : prev.imageUrl
+      }));
       setNewImageUrl('');
     }
   };
 
   const removeImage = (index) => {
-    setFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
-  };
-
-  // Al guardar, convierte strings a numeros
-  const handleSave = () => {
-    onSave({
-      ...formData,
-      unitPrice: Number(formData.unitPrice) || 0,
-      wholesalePrice: Number(formData.wholesalePrice) || 0,
-      wholesaleQuantity: Number(formData.wholesaleQuantity) || 0,
-      stock: Number(formData.stock) || 0,
-      discount: Number(formData.discount) || 0,
-      imageUrl: formData.images[0] || '',
+    setFormData(prev => {
+      const newImages = prev.images.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        images: newImages,
+        imageUrl: newImages.length > 0 ? newImages[0] : ''
+      };
     });
   };
 
-  const inputCls = "w-full p-2.5 border border-gray-200 rounded-lg mt-1 outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors text-sm";
-  const labelCls = "block text-xs font-bold text-gray-500 uppercase tracking-wide";
+const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({
+      ...formData,
+      // Usamos parsePrice para que limpie la basura visual antes de guardar
+      priceBulto: parsePrice(formData.priceBulto),
+      pricePallet: parsePrice(formData.pricePallet),
+      priceRetiro: parsePrice(formData.priceRetiro),
+      unitsPerBox: Number(formData.unitsPerBox),
+      boxesPerPallet: Number(formData.boxesPerPallet),
+      stock: Number(formData.stock),
+      discount: Number(formData.discount)
+    });
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <label className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer transition-colors text-sm font-bold ${formData.isVisible ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-500'}`}>
-          <input type="checkbox" name="isVisible" checked={formData.isVisible} onChange={handleChange} className="hidden" />
-          {formData.isVisible ? <Eye size={16} /> : <EyeOff size={16} />}
-          {formData.isVisible ? 'Visible en Tienda' : 'Oculto en Tienda'}
-        </label>
+    <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[70vh] space-y-5">
+      
+      {/* VISIBILIDAD */}
+      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <input type="checkbox" id="isVisible" name="isVisible" checked={formData.isVisible} onChange={handleChange} className="w-5 h-5 text-gray-900 rounded focus:ring-gray-900" />
+        <label htmlFor="isVisible" className="font-bold text-gray-900 cursor-pointer">Visible en Tienda</label>
       </div>
 
+      {/* DATOS BÁSICOS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="md:col-span-2">
-          <label className={labelCls}>Nombre</label>
-          <input name="name" value={formData.name} onChange={handleChange} className={inputCls} placeholder="Ej: Arroz Gallo Oro 1kg" />
+          <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Nombre del Producto</label>
+          <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg font-medium text-gray-900 focus:ring-2 focus:ring-gray-900 focus:outline-none" />
         </div>
         <div>
-          <label className={labelCls}>Categoria</label>
-          <input list="cat-suggestions" name="category" value={formData.category} onChange={handleChange} className={inputCls} placeholder="Ej: Almacen" />
-          <datalist id="cat-suggestions">{categories.map(c => <option key={c} value={c} />)}</datalist>
+          <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Categoría</label>
+          <input type="text" name="category" value={formData.category} onChange={handleChange} required list="category-options" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg font-medium text-gray-900 focus:ring-2 focus:ring-gray-900 focus:outline-none" />
+          <datalist id="category-options">{categories.map(cat => <option key={cat} value={cat} />)}</datalist>
         </div>
         <div>
-          <label className={labelCls}>Subcategoria</label>
-          <input name="subcategory" value={formData.subcategory} onChange={handleChange} className={inputCls} placeholder="Ej: Arroz" />
-        </div>
-        <div>
-          <label className={labelCls}>Precio Unitario ($)</label>
-          <input
-            type="text"
-            inputMode="decimal"
-            name="unitPrice"
-            value={formData.unitPrice}
-            onChange={handleChange}
-            className={inputCls}
-            placeholder="0"
-          />
-        </div>
-        <div>
-          <label className={labelCls}>Stock</label>
-          <input
-            type="text"
-            inputMode="numeric"
-            name="stock"
-            value={formData.stock}
-            onChange={handleChange}
-            className={inputCls}
-            placeholder="0"
-          />
-        </div>
-
-        <div className="md:col-span-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
-          <div className="flex items-center gap-2 mb-3">
-            <input type="checkbox" name="isUnitSaleOnly" checked={formData.isUnitSaleOnly} onChange={handleChange} className="w-4 h-4 accent-gray-900" id="unitSaleOnly" />
-            <label htmlFor="unitSaleOnly" className="text-sm font-bold text-gray-800 cursor-pointer">Venta SOLO por unidad (sin precio mayorista)</label>
-          </div>
-          {!formData.isUnitSaleOnly && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelCls}>Precio Mayorista ($)</label>
-                <input type="text" inputMode="decimal" name="wholesalePrice" value={formData.wholesalePrice} onChange={handleChange} className={inputCls + " bg-white"} placeholder="0" />
-              </div>
-              <div>
-                <label className={labelCls}>Cantidad minima</label>
-                <input type="text" inputMode="numeric" name="wholesaleQuantity" value={formData.wholesaleQuantity} onChange={handleChange} className={inputCls + " bg-white"} placeholder="0" />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="md:col-span-2">
-          <label className={labelCls + " mb-1"}>Imagenes del producto (URLs)</label>
-          <p className="text-xs text-gray-400 mb-2">Podes agregar multiples imagenes. La primera sera la principal en la tienda.</p>
-          <div className="flex gap-2 mb-3">
-            <input
-              value={newImageUrl}
-              onChange={e => setNewImageUrl(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addImage())}
-              className={inputCls + " flex-grow mt-0"}
-              placeholder="https://url-de-la-imagen.com/foto.jpg"
-            />
-            <button type="button" onClick={addImage} className="px-4 bg-gray-900 text-white rounded-lg font-bold hover:bg-black text-sm flex-shrink-0">
-              + Agregar
-            </button>
-          </div>
-          {formData.images.length > 0 ? (
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {formData.images.map((img, idx) => (
-                <div key={idx} className="relative w-20 h-20 flex-shrink-0 group border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-100">
-                  {idx === 0 && (
-                    <span className="absolute bottom-0 left-0 right-0 bg-gray-900/80 text-white text-[9px] text-center font-bold py-0.5 z-10">
-                      Principal
-                    </span>
-                  )}
-                  <img src={img} className="w-full h-full object-cover" alt={`img-${idx}`} onError={e => { e.target.style.display='none'; }} />
-                  <button type="button" onClick={() => removeImage(idx)} className="absolute top-0.5 right-0.5 bg-red-600 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                    <X size={10} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-gray-300 italic">Sin imagenes aun. Agrega una URL arriba.</p>
-          )}
-        </div>
-
-        <div className="md:col-span-2">
-          <label className={labelCls}>Descripcion</label>
-          <textarea name="description" value={formData.description} onChange={handleChange} className={inputCls + " h-20 resize-none"} placeholder="Descripcion breve del producto..." />
+          <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Subcategoría</label>
+          <input type="text" name="subcategory" value={formData.subcategory} onChange={handleChange} className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg font-medium text-gray-900 focus:ring-2 focus:ring-gray-900 focus:outline-none" />
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 pt-5 border-t mt-2">
-        <button type="button" onClick={onCancel} className="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition-colors text-sm">Cancelar</button>
-        <button type="button" onClick={handleSave} className="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-lg hover:bg-black transition-colors text-sm shadow">Guardar cambios</button>
+      {/* --- EL NUEVO BLOQUE LOGÍSTICO Y DE PRECIOS --- */}
+      <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-4">
+        <h4 className="font-bold text-blue-900 text-sm uppercase border-b border-blue-200 pb-2">Estructura de Precios y Cajas</h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">1. Precio RETIRO ($)</label>
+            <input type="text" inputMode="numeric" name="priceRetiro" value={formData.priceRetiro} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 font-bold text-green-700" placeholder="Ej: $12.423" />
+            <p className="text-[10px] text-gray-500 mt-1">El precio gancho (más barato).</p>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">2. Precio PALLET ($)</label>
+            <input type="text" inputMode="numeric" name="pricePallet" value={formData.pricePallet} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 font-bold text-amber-600" placeholder="Ej: $13.653" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">3. Precio BULTO ($)</label>
+            <input type="text" inputMode="numeric" name="priceBulto" value={formData.priceBulto} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 font-bold text-red-600" placeholder="Ej: $14.268" />
+            <p className="text-[10px] text-gray-500 mt-1">Precio de entrega estándar.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Unidades x Caja</label>
+            <input type="number" name="unitsPerBox" value={formData.unitsPerBox} onChange={handleChange} required min="1" className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500" placeholder="Ej: 6" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Cajas x Pallet</label>
+            <input type="number" name="boxesPerPallet" value={formData.boxesPerPallet} onChange={handleChange} min="0" className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500" placeholder="Ej: 100" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">Stock (Cajas)</label>
+            <input type="number" name="stock" value={formData.stock} onChange={handleChange} required min="0" className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500" />
+          </div>
+        </div>
       </div>
-    </div>
+      {/* ---------------------------------------------- */}
+
+      {/* IMÁGENES */}
+      <div>
+        <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Imágenes del Producto (URLs)</label>
+        <div className="flex gap-2 mb-3">
+          <input type="url" value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} placeholder="https://ejemplo.com/foto.jpg" className="flex-grow p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:outline-none" />
+          <button type="button" onClick={addImage} className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-bold hover:bg-gray-200 transition-colors border border-gray-200 text-sm whitespace-nowrap">+ Agregar</button>
+        </div>
+        {formData.images?.length > 0 ? (
+          <div className="grid grid-cols-4 gap-3">
+            {formData.images.map((img, index) => (
+              <div key={index} className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-square bg-white">
+                <img src={img} alt={`Preview ${index}`} className="w-full h-full object-contain p-1" />
+                <button type="button" onClick={() => removeImage(index)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm"><X size={14} /></button>
+                {index === 0 && <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] font-bold text-center py-1">PRINCIPAL</div>}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-6 border-2 border-dashed border-gray-200 rounded-xl text-center bg-gray-50"><p className="text-sm text-gray-500 font-medium">Sin imágenes aún. Agrega una URL arriba.</p></div>
+        )}
+      </div>
+
+      {/* DESCRIPCIÓN */}
+      <div>
+        <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Descripción</label>
+        <textarea name="description" value={formData.description} onChange={handleChange} rows="3" className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-gray-900 focus:outline-none resize-none" placeholder="Detalles adicionales del producto..."></textarea>
+      </div>
+
+      {/* BOTONES */}
+      <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6">
+        <button type="button" onClick={onCancel} className="px-6 py-2.5 rounded-lg font-bold text-gray-600 hover:bg-gray-100 transition-colors">Cancelar</button>
+        <button type="submit" className="bg-gray-900 text-white px-8 py-2.5 rounded-lg font-bold hover:bg-black transition-all active:scale-95 shadow-md">Guardar Cambios</button>
+      </div>
+    </form>
   );
 };
 
@@ -478,15 +473,46 @@ export default function AdminDashboard() {
           const batch = writeBatch(db);
           const productsRef = collection(db, `artifacts/${APP_ID_DB}/public/data/products`);
           let count = 0;
-          data.forEach(row => {
+data.forEach(row => {
+            const rawName = row.Nombre || row.name || 'Sin Nombre';
+            
+            // 1. CREAMOS UN ID ÚNICO BASADO EN EL NOMBRE
+            const safeId = rawName
+              .toString()
+              .toLowerCase()
+              .trim()
+              .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]/g, '-');
+
+            const units = Number(row.UnidadesCaja || 1);
+
+            // 2. Limpiamos los precios con la "aspiradora" que creamos antes
+            let pb = parsePrice(row.PrecioBulto);     
+            let pp = parsePrice(row.PrecioPallet);   
+            let pr = parsePrice(row.PrecioRetiro); 
+
+            // 3. EL SALVAVIDAS MATEMÁTICO: ¿El Excel dice que es precio unitario?
+            const esUnitario = String(row.PrecioEsUnitario || '').toUpperCase().trim() === 'SI';
+            
+            if (esUnitario) {
+              // Si es unitario, la página lo multiplica por la caja ANTES de guardarlo
+              pb = pb * units;
+              pp = pp * units;
+              pr = pr * units;
+            }
+
             const productData = {
-              name: row.Nombre || row.name || 'Sin Nombre',
+              name: rawName,
               category: row.Categoria || row.category || 'General',
               subcategory: row.Subcategoria || row.subcategory || '',
-              unitPrice: Number(row.PrecioUnitario || row.unitPrice || 0),
-              wholesalePrice: Number(row.PrecioMayorista || row.wholesalePrice || 0),
-              wholesaleQuantity: Number(row.CantidadMayorista || row.wholesaleQuantity || 3),
-              stock: Number(row.Stock || row.stock || 0),
+              
+              priceBulto: pb,     
+              pricePallet: pp,   
+              priceRetiro: pr,   
+              unitsPerBox: units,   
+              boxesPerPallet: Number(row.CajasPallet || 0), 
+
+              stock: Number(row.Stock || row.stock || 1000),
               imageUrl: row.Imagen || row.imageUrl || '',
               images: row.Imagen ? [row.Imagen] : [],
               description: row.Descripcion || row.description || '',
@@ -496,7 +522,8 @@ export default function AdminDashboard() {
               isBestSeller: false,
               isVisible: String(row.Visible).toUpperCase() !== 'NO',
             };
-            batch.set(doc(productsRef), productData);
+
+            batch.set(doc(productsRef, safeId), productData, { merge: true });
             count++;
           });
           await batch.commit();

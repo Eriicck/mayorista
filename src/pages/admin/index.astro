@@ -1,0 +1,24 @@
+---
+import '../../styles/global.css'
+import AdminApp from '../../components/admin/AdminApp'
+import Avisos from '../../components/ui/Avisos'
+import { TIENDA } from '../../config/tienda'
+---
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Panel de administración — {TIENDA.nombre}</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="theme-color" content="#111827" />
+</head>
+<body class="bg-gray-100">
+  <!-- El panel solo existe en el navegador: no se incluye en el código de la tienda -->
+  <AdminApp client:only="react">
+    <div slot="fallback" class="grid min-h-dvh place-items-center bg-gray-900 text-sm text-gray-400">Cargando panel…</div>
+  </AdminApp>
+  <Avisos client:idle />
+</body>
+</html>

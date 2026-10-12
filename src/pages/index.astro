@@ -1,0 +1,50 @@
+---
+import { Package, Store, Truck } from 'lucide-react'
+import Tienda from '../layouts/Tienda.astro'
+import Banners from '../components/tienda/Banners'
+import Catalogo from '../components/tienda/Catalogo'
+import { TIENDA } from '../config/tienda'
+import { CATALOGO_INICIAL } from '../lib/catalogo'
+import { precioCaja } from '../lib/precios'
+
+const VENTAJAS = [
+  { Icono: Store, titulo: 'Retiro en el local', texto: 'El precio más bajo, listo en el día.' },
+  { Icono: Truck, titulo: 'Envío por bulto', texto: 'Llevamos tus cajas a domicilio.' },
+  { Icono: Package, titulo: 'Envío por pallet', texto: 'Para compras grandes, mejor precio.' },
+]
+
+// Datos estructurados: la tienda y su catálogo, para Google
+const visibles = CATALOGO_INICIAL.productos.filter((p) => p.visible)
+const schema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    { '@type': 'Store', name: TIENDA.nombre, url: TIENDA.url, telephone: `+${TIENDA.whatsapp}`, address: { '@type': 'PostalAddress', streetAddress: TIENDA.direccion, addressCountry: 'AR' }, openingHours: ['Mo-Fr 08:00-17:00', 'Sa 08:00-13:00'] },
+    {
+      '@type': 'ItemList',
+      itemListElement: visibles.map((p, i) => ({
+        '@type': 'ListItem', position: i + 1,
+        item: { '@type': 'Product', name: p.nombre, brand: p.marca, category: p.categoria, image: new URL(p.imagenes[0], TIENDA.url).href,
+          offers: { '@type': 'Offer', priceCurrency: 'ARS', price: precioCaja(p, 'retiro'), availability: p.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' } },
+      })),
+    },
+  ],
+}
+---
+<Tienda>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(schema)} />
+  <div class="mx-auto max-w-7xl px-4 pt-4">
+    <h1 class="sr-only">{TIENDA.nombre}: distribuidora mayorista con precios por caja cerrada</h1>
+    <Banners client:load />
+
+    <ul class="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+      {VENTAJAS.map(({ Icono, titulo, texto }) => (
+        <li class="flex flex-col items-center gap-2 rounded-2xl border border-gray-100 bg-gray-50 p-3 text-center sm:flex-row sm:p-4 sm:text-left">
+          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white text-gray-900 shadow-sm"><Icono size={20} /></span>
+          <span><span class="block text-xs font-bold sm:text-sm">{titulo}</span><span class="hidden text-xs text-gray-500 sm:block">{texto}</span></span>
+        </li>
+      ))}
+    </ul>
+
+    <Catalogo client:load />
+  </div>
+</Tienda>

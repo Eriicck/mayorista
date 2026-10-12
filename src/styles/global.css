@@ -1,0 +1,25 @@
+@import "@fontsource-variable/inter";
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { @apply bg-white text-gray-900 antialiased; }
+
+/* Barras de scroll ocultas en las filas de categorías */
+.sin-scrollbar { scrollbar-width: none; }
+.sin-scrollbar::-webkit-scrollbar { display: none; }
+
+/* <dialog> nativo: fondo oscuro y animación de entrada */
+dialog::backdrop { background: rgb(0 0 0 / 0.55); backdrop-filter: blur(2px); }
+dialog[open] { animation: aparecer 0.18s ease-out; }
+dialog.panel-lateral[open] { animation: deslizar 0.22s ease-out; }
+@keyframes aparecer { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@keyframes deslizar { from { transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  dialog[open], dialog.panel-lateral[open] { animation: none; }
+}
